@@ -48,7 +48,7 @@ def compute_CH(X: np.ndarray, params: np.ndarray):
         return calinski_harabasz_score(X, labels)
 
 def compute_CH_scaled(X: np.ndarray, params: np.ndarray):
-    gammas = E_step(X, params)
+    gammas = E_step(X, params) #TODO use PCA and to the proper mahlanobis transform
     labels = np.argmax(gammas, axis=0)
     X_scaled = copy.deepcopy(X)
     X_scaled = X_scaled / X_scaled.std(axis=0)
@@ -58,13 +58,21 @@ def compute_CH_scaled(X: np.ndarray, params: np.ndarray):
     else:
         return calinski_harabasz_score(X_scaled, labels)
 
+def compute_MML(X, params):
+    N, d, K, d_component = X.shape[0], len(params), len(params)//4, 4
+    ll = compute_ll(X, params)
+    #gammas = E_step(X, params)
+    return d_component/2 * np.sum(np.log(N*params[::4]/12))  + K/2 * np.log(N/12) + K*(d_component+1)/2 - ll
+
 scores = {
     "ll": {"func": compute_ll, "rank_params": {"ascending": False}},
     "AIC": {"func": compute_AIC, "rank_params": {"ascending": True}},
     "BIC": {"func": compute_BIC, "rank_params": {"ascending": True}},
     #"KIC": {"func": compute_KIC, "rank_params": {"ascending": True}},
+    "MML": {"func": compute_MML, "rank_params": {"ascending": True}},
     "silhouette": {"func": compute_silhouette, "rank_params": {"ascending": False}}, # , "na_option": "bottom" should´nt be necessary anymore because
     "HC": {"func": compute_CH, "rank_params": {"ascending": False}},
     "HC_scaled": {"func": compute_CH_scaled, "rank_params": {"ascending": False}},
+    
     #"MDL": {"func": compute_MDL, "rank_params": {"ascending": True}}
 }

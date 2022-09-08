@@ -19,6 +19,7 @@ class Routine:
     random_inside = "random_inside"
     optics = "OPTICS"
     optics_weighted = "OPTICS_weighted"
+    all = [random, random_inside, optics, optics_weighted]
 
 
 class Cluster_initialization:

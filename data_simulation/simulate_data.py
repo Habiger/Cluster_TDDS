@@ -45,8 +45,8 @@ class Experiment:
       # no more than 10 Clusters useful according to DA
 
 
-    def __init__(self, seed, max_cluster_number=5):
-        np.random.seed(seed)
+    def __init__(self, max_cluster_number=5):
+        #np.random.seed(seed) doenst work yet
         self.n_cluster_range = (1, max_cluster_number)
         self.n_cluster = self._set_cluster_number()
         self.cluster = [Cluster() for i in range(self.n_cluster)]
