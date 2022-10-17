@@ -6,9 +6,11 @@ import seaborn as sns
 def get_init_rout_performance(df_total, total_rank):
     init_rout_perf = {}
     for init_routine in df_total.init_routine.unique():
+       
         n_correct, n_total = 0, 0
         for dataset in df_total.dataset.unique():
-            df = df_total[df_total.dataset == dataset]
+            df = df_total[df_total.init_routine == init_routine]
+            df = df[df.dataset == dataset]
             df = df[df[total_rank] == 1]
             if df.N_cluster.values[0] == df.True_Cluster_number.values[0]:
                 n_correct += 1

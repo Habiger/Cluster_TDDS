@@ -14,7 +14,7 @@ from cluster_initialization.parameter_dataclass import Params
 
 class RANDOM_inside_routine:
     assigns_labels = False
-    N_max = 1000
+    N_max = 2000
 
     @classmethod
     def algorithm(cls, df: pd.DataFrame) -> Dict[int, Params]:
@@ -26,7 +26,7 @@ class RANDOM_inside_routine:
         for cl in range(cls.N_max):
             params = Params(cl)
             params.x.mu, params.y.mu = cls._get_xy(logx_min, logx_max, y_min, y_max, polygon)
-            params.y.std =  np.random.uniform(0.1, 1)
+            params.y.std =  np.random.uniform(0.1, 2)
             params.mix_coef = 1
             params_dict[cl] = params
         return params_dict, None   # None indicates that the algorithm returns no labels for the original datapoints
@@ -40,6 +40,21 @@ class RANDOM_inside_routine:
                 idx = np.random.choice(cluster_keys, size=K, replace=False)
                 sampled_params.append({key: val for key, val in init_params.items() if key in idx})
         return sampled_params
+
+    @classmethod
+    def get_single_init_param_sample(cls, init_params, K):
+        """used for sampling new starting values for replacing misbehaving starting values (singularities)
+
+        Args:
+            * init_params (?): `self.init_params` in 'Cluster_initialization` object \\
+            * K (int): number of clusters in this init param set
+
+        Returns:
+            dict[int]: new shuffled sample of init_params from init_params
+        """
+        cluster_keys = list(init_params.keys())
+        idx = np.random.choice(cluster_keys, size=K, replace=False)
+        return {key: val for key, val in init_params.items() if key in idx}
 
     @classmethod
     def _get_polygon(cls, df) -> Polygon:

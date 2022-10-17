@@ -1,3 +1,4 @@
+from functools import cache
 import numpy as np
 from scipy.optimize import minimize
 from numba import njit
@@ -18,6 +19,15 @@ def p(X: np.ndarray, params_k: np.ndarray):
     """computes for every data point X = (x1, x2) = (tau, deltaV) the value os its probability density, given the parameters for a certain cluster
     """
     return (exp_pdf(X[:, 0], params_k[1]) * norm_pdf(X[:,1], params_k[2], params_k[3]))
+
+@njit(fastmath=True, cache=True)
+def pdfs(X: np.ndarray, params: np.ndarray): # new function to compute the pdfs for all clusters for every point
+    N = X.shape[0]
+    K = params.shape[0]//4
+    pdfs_ = np.empty((N, K))
+    for k in range(K):
+        pdfs_[:, k] = p(X, params[4*k:4*(k+1)])
+    return pdfs_
 
 @njit(fastmath=True, cache=True)
 def gamma(X: np.ndarray, params: np.ndarray, k: int) -> np.ndarray:
@@ -47,11 +57,11 @@ def E_step(X: np.ndarray, params: np.ndarray):
 def cdll2(params: np.ndarray, X: np.ndarray, gammas: np.ndarray) -> np.ndarray:
     K = len(params)//4
     N = X.shape[0]
-    pdfs = np.empty((K, N))
+    pdfs_ = np.empty((K, N))
     mix_coeffs = params[::4]
     for k in range(K):
-        pdfs[k, :] = p(X, params[k * 4:(k + 1) * 4])
-    return -np.sum( gammas * (np.log(mix_coeffs) + np.log(pdfs.T)).T) # K x N * (K x N).T = K
+        pdfs_[k, :] = p(X, params[k * 4:(k + 1) * 4])
+    return -np.sum( gammas * (np.log(mix_coeffs) + np.log(pdfs_.T)).T) # K x N * (K x N).T = K
 
 
 def M_step(X, params_array, gammas, min_mix_coef):

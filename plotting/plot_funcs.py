@@ -22,7 +22,7 @@ def plot_responsibilities(experiment, params_array):
         #ax[j, k].scatter(np.log(experiment.cluster[j].param_exp["scale"]), experiment.cluster[j].param_norm["loc"], c="blue")
         ax[j, k].scatter(np.log(params_array[1+i*4]), params_array[2+i*4], c="orange")
         ax[j, k].set_title(f"Cluster {i}", size=15, color="white")
-    fig.suptitle("Reponsibilites $\gamma$", color="white")
+    fig.suptitle("Reponsibilites $\gamma$", color="white", size = 30)
     fig.subplots_adjust(right=0.8)
     cbar_ax = fig.add_axes([0.83, 0.15, 0.03, 0.7])
     fig.colorbar(points, cax=cbar_ax)
