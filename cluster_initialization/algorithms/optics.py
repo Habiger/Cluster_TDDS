@@ -78,5 +78,27 @@ class OPTICS_routine:
         return selected_init_params
 
 
+    @classmethod
+    def get_single_init_param_sample_rnd(cls, init_params, K):
+        """from rnd: used for sampling new starting values for replacing misbehaving starting values (singularities)
+
+        Args:
+            * init_params (?): `self.init_params` in 'Cluster_initialization` object \\
+            * K (int): number of clusters in this init param set
+
+        Returns:
+            dict[int]: new shuffled sample of init_params from init_params
+        """
+        cluster_keys = list(init_params.keys())
+        idx = np.random.choice(cluster_keys, size=K, replace=False)
+        return {key: val for key, val in init_params.items() if key in idx}
 
 
+
+    @classmethod
+    def get_single_init_param_sample(cls, init_params, K):
+        """sample new init params; it is possible to get the same as has been used before #TODO ?
+        """
+        cluster_numbers, K = init_params.keys(), len(init_params)
+        selected_clusters = np.random.choice(list(cluster_numbers), size=K, replace=False)
+        return {cl: copy.deepcopy(init_params[cl]) for cl in selected_clusters}

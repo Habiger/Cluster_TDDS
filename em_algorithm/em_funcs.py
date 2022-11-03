@@ -68,9 +68,9 @@ def M_step(X, params_array, gammas, min_mix_coef):
         args = (X, gammas), 
         method="SLSQP",
         options = {
-            "maxiter": 300,
-            "eps": 1e-10,
-            #"ftol": 1e-03
+            "maxiter": 100,
+            #"eps": 1e-6,
+            #"ftol": 1e-0
         } 
     )
     return minimizer.x

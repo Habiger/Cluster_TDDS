@@ -11,7 +11,7 @@ class Cluster:
     #TODO add gaussian noise to cluster values
     #TODO add additional "noise measurements" (maybe?)
     #TODO norm distribution should start at 
-    size_range = (1, 100)  # 1....1000 given from Prof Waltl
+    size_range = (2, 100)  # 1....1000 given from Prof Waltl
     scale_range_exp = (10**-3, 1)
     scale_range_norm = (0.1, 1)
     loc_range_norm = (0.5, 7)  # 

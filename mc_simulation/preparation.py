@@ -14,6 +14,7 @@ def initialize_results_dict(init_routines = ['OPTICS', 'random_inside']):
         "init_params": [],
         "df_scores": [],
         "df_scores_na": [],
+        "em_results": []
     }
     run_results = {init: deepcopy(sub_results) for init in init_routines}
     return run_results

@@ -97,7 +97,7 @@ class Cluster_initialization:
         init_param_new = self.Routine.get_single_init_param_sample(self.init_params, K)
         init_param_new = self._correct_mix_coef([init_param_new])
         init_param_array_new = self._create_param_array(init_param_new[0])
-        #self.replace_init_param(init_param_new) # update objects init_params
+        self.sampled_init_params_array[idx] = init_param_array_new[:]
         return init_param_array_new
 
     def plot_initial_values(self, idx):    
