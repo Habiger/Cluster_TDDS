@@ -1,25 +1,24 @@
 import numpy as np
 from scipy.optimize import minimize
-from numba import njit
+from numba import njit, jit
 
 from miscellaneous.execution_time_decorator import timeit
 
-@njit(fastmath=True, cache=True)
+@njit(fastmath=True, cache=True, nogil=True)
 def norm_pdf(x, mu, sigma):
     return 1/(sigma * np.sqrt(2 * np.pi)) * np.exp(-1/2 * ((x-mu)/sigma)**2)
 
-@njit(fastmath=True, cache=True)
+@njit(fastmath=True, cache=True, nogil=True)
 def exp_pdf(x, mu):
-    #TODO implement as log(exp) distribution -> original ??
     return 1/mu * np.exp(-x/mu)
 
-@njit(fastmath=True, cache=True)
+@njit(fastmath=True, cache=True, nogil=True)
 def p(X: np.ndarray, params_k: np.ndarray):
     """computes for every data point X = (x1, x2) = (tau, deltaV) the value os its probability density, given the parameters for a certain cluster
     """
     return (exp_pdf(X[:, 0], params_k[1]) * norm_pdf(X[:,1], params_k[2], params_k[3]))
 
-@njit(fastmath=True, cache=True)
+@njit(fastmath=True, cache=True, nogil=True)
 def gamma(X: np.ndarray, params: np.ndarray, k: int) -> np.ndarray:
     """for a specific cluster
     """
@@ -32,7 +31,7 @@ def gamma(X: np.ndarray, params: np.ndarray, k: int) -> np.ndarray:
     #denominator = np.sum([ for k_ in range(K)], axis=0)
     return nominator/denominator
 
-@njit(fastmath=True, cache=True)
+@njit(fastmath=True, cache=True, nogil=True)
 def E_step(X: np.ndarray, params: np.ndarray):
     """calculate_responsibilities
     """
@@ -43,7 +42,7 @@ def E_step(X: np.ndarray, params: np.ndarray):
         gammas[k, :] = gamma(X, params, k)
     return gammas
 
-@njit(fastmath=True, cache=True)
+@njit(fastmath=True, cache=True, nogil=True)
 def cdll2(params: np.ndarray, X: np.ndarray, gammas: np.ndarray) -> np.ndarray:
     K = len(params)//4
     N = X.shape[0]
@@ -54,12 +53,27 @@ def cdll2(params: np.ndarray, X: np.ndarray, gammas: np.ndarray) -> np.ndarray:
     return -np.sum( gammas * (np.log(mix_coeffs) + np.log(pdfs.T)).T) # K x N * (K x N).T = K
 
 
-def M_step(X, params_array, gammas, min_mix_coef):
-    """minimize log likelihood
-    """
-    abstol = 1e-06
-    constr = ({"type": "eq", "fun": lambda x: np.sum(x[::4])-1},  # nebenbedingung
-              {"type": "ineq", "fun": lambda x: x - abstol},      # parameters must be positive
+@njit(fastmath=True, cache=True, nogil=True)
+def has_converged(X, params_new, params_old, em_tol):
+    ll_new = cdll2(params_new, X, E_step(X, params_new)) 
+    ll_old = cdll2(params_old, X, E_step(X, params_old)) 
+    diff = np.abs(ll_new-ll_old)
+    #diff = sum(np.abs(params_new - params_old))
+    if diff < em_tol:
+        return True
+    else:
+        return False
+
+@njit(fastmath=True, cache=True, nogil=True)
+def constraint_1(x):
+    return np.sum(x[::4])-1
+
+
+def M_step(X, params_array, gammas, min_mix_coef, abs_tol_params):
+    """minimize log likelihood    
+    """           
+    constr = ({"type": "eq", "fun": constraint_1},  # nebenbedingung
+              {"type": "ineq", "fun": lambda x: x - abs_tol_params},      # parameters must be positive
               {"type": "ineq", "fun": lambda x: x[::4] - min_mix_coef})   # minimum number of points per cluster
     minimizer = minimize(
         cdll2, 
@@ -75,25 +89,19 @@ def M_step(X, params_array, gammas, min_mix_coef):
     )
     return minimizer.x
 
+
 @timeit
-def run_EM(X, params, em_tol=1e-8, max_iter = 300, min_mix_coef=0.05):
+def run_EM(X, params, em_tol=1e-8, max_iter = 300, min_mix_coef=0.05, abs_tol_params=1e-8):
+    """compared to `run_EM` it uses also njit constraints in `M_step`
+    """
     i=1
     while(i < max_iter):
         gammas = E_step(X, params)
-        new_params = M_step(X, params, gammas, min_mix_coef)
+        new_params = M_step(X, params, gammas, min_mix_coef, abs_tol_params)
         if has_converged(X, new_params, params, em_tol):
             return new_params, i
         params = new_params
         i+=1
     return new_params, i
 
-@njit(fastmath=True, cache=True)
-def has_converged(X, params_new, params_old, em_tol):
-    ll_new = cdll2(params_new, X, E_step(X, params_new)) 
-    ll_old = cdll2(params_old, X, E_step(X, params_old)) 
-    diff = np.abs(ll_new-ll_old)
-    #diff = sum(np.abs(params_new - params_old))
-    if diff < em_tol:
-        return True
-    else:
-        return False
+

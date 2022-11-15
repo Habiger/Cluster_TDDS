@@ -6,6 +6,7 @@ import colorcet as cc
 from em_algorithm.em_funcs import gamma
 
 def plot_responsibilities(experiment, params_array):
+    #TODO set color range fixed
     df = experiment.df.copy()
     K = len(params_array)//4
     for cl in range(K):

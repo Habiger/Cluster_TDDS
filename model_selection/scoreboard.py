@@ -2,13 +2,18 @@ import pandas as pd
 import numpy as np
 from model_selection.scores import scores
 
+def update_results_ll(results, X):
+    results["ll"] = []
+    for params in results["params"]:
+        results["ll"].append(scores["ll"]["func"](X, params))
+    return results
 
 def create_scoreboard(results, X):
     for measure in scores.keys():
         results[measure] = []
     results["N_cluster"] = []
 
-    for params in results["params"]:  #BUG setting copy warnings
+    for params in results["params"]:  
         for criteria, items in scores.items():
             results[criteria].append(items["func"](X, params))
         results["N_cluster"].append(len(params) // 4)
@@ -40,7 +45,7 @@ def calculate_total_proportional_rank(df_scores, scores):
         score_scaled = score_shifted / max(score_shifted)
         df_scores[score+"_relative"] = score_scaled
 
-    df_scores["Total_score_prop"] = df_scores[[score + "_relative" for score in scores.keys()]].sum(axis=1).copy()
+    df_scores["Total_score_prop"] = df_scores[[score + "_relative" for score in scores.keys()]].sum(axis=1)
     df_scores["Total_score_prop"] = df_scores["Total_score_prop"] / len(scores.keys())
     df_scores.drop(columns=[score+"_relative" for score in scores.keys()], inplace=True)
     df_scores["Total_prop_rank"] = df_scores["Total_score_prop"].rank(method="min", ascending=False).astype(int)

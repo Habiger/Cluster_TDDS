@@ -27,7 +27,6 @@ def get_number_of_correctly_identified_clusters(df_pred):
     return correctly_identified_clusters
 
 def process_run_results2(run_results, run_data):
-
     df_list = []
     for init in run_results.keys():
         print(init)

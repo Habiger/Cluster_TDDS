@@ -43,7 +43,7 @@ def calculate_cluster_params_from_drawn_samples(df):
 def gamma_cols(df):
     return [col for col in df.columns if "gamma" in col]
 
-def predict_clusters(df, results, df_scores):
+def predict_clusters(df, results, df_scores, param_idx=None):
     """includes responsibilities for predicted parameters of distributions into df
 
     Args:
@@ -57,7 +57,11 @@ def predict_clusters(df, results, df_scores):
     df = df.copy()
     X = df[["x", "y", "cluster"]].to_numpy()
     #best_model_idx = 0
-    bm_params = results["params"][df_scores.param_index.iloc[0]]
+    if param_idx is None:
+        bm_params = results["params"][df_scores.param_index.iloc[0]]
+    else:
+        bm_params = results["params"][param_idx]
+    
     K = len(bm_params) //4
     for cl in range(K):
         df[f"gamma_{cl}"]  = gamma(X, bm_params, cl)
@@ -70,7 +74,7 @@ def calculate_cluster_params(df):
     df_cl_grouped = df_cl_grouped.reset_index()  
     return df_cl_grouped
 
-def calc_dist(x1, y1, x2, y2):
+def calc_dist(x1, y1, x2, y2): #TODO find appropiate distance
     return np.sqrt((np.log(x1)-np.log(x2))**2 + (y1-y2)**2)
 
 def get_correctly_classified_mapping(df2):
@@ -90,8 +94,8 @@ def get_correctly_classified_mapping(df2):
             mapping_dict[cl_pred] = cl
     return mapping_dict
 
-def get_prediction_df(df_exp, results, df_scores):
-    df_with_responsibilities = predict_clusters(df_exp, results, df_scores)
+def get_prediction_df(df_exp, results, df_scores, param_idx=None):
+    df_with_responsibilities = predict_clusters(df_exp, results, df_scores, param_idx)
     df_pred_params = calculate_cluster_params(df_with_responsibilities)
     df_sample_params = calculate_cluster_params_from_drawn_samples(df_with_responsibilities)
     df1 = df_sample_params.merge(df_pred_params, how="cross")

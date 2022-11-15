@@ -7,52 +7,85 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 
-class Cluster:
-    #TODO add gaussian noise to cluster values
-    #TODO add additional "noise measurements" (maybe?)
-    #TODO norm distribution should start at 
-    size_range = (2, 100)  # 1....1000 given from Prof Waltl
-    scale_range_exp = (10**-3, 1)
-    scale_range_norm = (0.1, 1)
-    loc_range_norm = (0.5, 7)  # 
-
-
-    def __init__(self):
+class SimulationParameter:
+    """default simulation parameters
+    """
+    exp_scale_range = (10**-3, 1)
+    norm_loc_range =  (0.5, 7)
+    norm_scale_range = (0.1, 1)
+    cluster_number_range = (1, 5)
+    cluster_size_range = (2, 100)
+    
+class Cluster(SimulationParameter):
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)        # sets manually specified simulation parameters
         self.size = self._get_size()
-        scale_exp = np.random.uniform(low=self.scale_range_exp[0], high=self.scale_range_exp[1])
-        self.param_exp = {"scale": scale_exp, "size": self.size}
-
-        self.scale_norm = np.random.uniform(low=self.scale_range_norm[0], high=self.scale_range_norm[1])
-        self.loc_norm = np.random.uniform(low=self.loc_range_norm[0], high=self.loc_range_norm[1])
-
-        self.param_norm = {"loc": self.loc_norm, "scale": self.scale_norm, "size": self.size}
+        self.exp_param = self._get_distr_params_exp()
+        self.norm_param = self._get_distr_params_norm()
         self.coordinates = self._get_coordinates()
 
-
     def _get_size(self):
-        possible_size_numbers = [i for i in range(self.size_range[0], self.size_range[1]+1)]
+        possible_size_numbers = [i for i in range(self.cluster_size_range[0], self.cluster_size_range[1]+1)]
         return random.choice(possible_size_numbers)
 
+    def _get_distr_params_exp(self):
+        params = {
+            "scale": np.exp(np.random.uniform(
+                low = np.log(self.exp_scale_range[0]), 
+                high = np.log(self.exp_scale_range[1])
+                )), 
+            "size": self.size
+            }
+        return params
+
+    def _get_distr_params_norm(self):
+        params = {
+            "loc": np.random.uniform(
+                low=self.norm_loc_range[0], 
+                high=self.norm_loc_range[1]
+                ), 
+            "scale": np.random.uniform(
+                low=self.norm_scale_range[0], 
+                high=self.norm_scale_range[1]
+                ), 
+            "size": self.size
+            }
+        return params
+
     def _get_coordinates(self):
-        x = np.random.exponential(**self.param_exp)
-        y = np.random.normal(**self.param_norm)
+        x, y = np.random.exponential(**self.exp_param), np.random.normal(**self.norm_param)
         return pd.DataFrame({"x": x, "y": y})
 
 
+    @classmethod
+    def from_parametric_bootstrap(cls, row):
+        obj = cls.__new__(cls)
+        obj.size = row.n_points
+        obj.exp_param = {
+            "scale": row.x_mean, 
+            "size": obj.size
+            }
+        obj.norm_param = {
+            "loc": row.y_mean, 
+            "scale": row.y_std, 
+            "size": obj.size
+            }
+        obj.coordinates = obj._get_coordinates()
+        return obj
 
-class Experiment:
-    #TODO implement step sizes to locate normal distribution
-      # no more than 10 Clusters useful according to DA
 
-
-    def __init__(self, max_cluster_number=5):
-        #np.random.seed(seed) doenst work yet
-        self.n_cluster_range = (1, max_cluster_number)
-        self.n_cluster = self._set_cluster_number()
-        self.cluster = [Cluster() for i in range(self.n_cluster)]
+class Experiment(SimulationParameter):
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)           # sets manually specified Simulation Parameters
+        self.n_cluster = self._get_cluster_number()
+        self.cluster = [Cluster(**kwargs) for i in range(self.n_cluster)]
         self.df = self._get_df()
-        self.X = self.df[["x", "y"]].copy().to_numpy()
-    
+        self.X = self.df[["x", "y"]].to_numpy(copy=True)
+
+    def _get_cluster_number(self):
+        possible_cluster_numbers = [i for i in range(self.cluster_number_range[0], self.cluster_number_range[1]+1)]
+        return random.choice(possible_cluster_numbers)
+
     def _get_df(self):
         df_list = []
         for i, cluster in enumerate(self.cluster):
@@ -61,6 +94,28 @@ class Experiment:
             df_list.append(df)
         return pd.concat(df_list)
 
-    def _set_cluster_number(self):
-        possible_cluster_numbers = [i for i in range(self.n_cluster_range[0], self.n_cluster_range[1]+1)]
-        return random.choice(possible_cluster_numbers)
+    def get_distr_params_df(self):
+        """`ToDo:` decide wether to store as metadata in hdf5 or as dataframe
+        """
+        dict_df = {
+            "cluster": [i for i in range(self.n_cluster)],
+            "clustersize": [cluster.size for cluster in self.cluster],
+            "x_scale": [cluster.exp_param.scale for cluster in self.cluster],
+            "y_loc": [cluster.norm_param.loc for cluster in self.cluster],
+            "y_scale": [cluster.norm_param.scale for cluster in self.cluster]
+        }
+        return pd.DataFrame.from_dict(dict_df)
+
+
+    @classmethod
+    def from_parametric_bootstrap(cls, df):
+        """draws parametric bootstrap sample from given parameters in `df`
+        """
+        obj = cls.__new__(cls)              # does not call __init__
+        obj.n_cluster = len(df.prediction_cluster.unique())
+        obj.cluster = [Cluster.from_parametric_bootstrap(df.loc[i]) for i in df.index]
+        obj.df = obj._get_df()
+        obj.X = obj.df[["x", "y"]].copy().to_numpy()
+        return obj
+
+
