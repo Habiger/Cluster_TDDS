@@ -34,7 +34,7 @@ class Cluster_initialization:
     def __init__(self, df: pd.DataFrame, routine=Routine.optics):
         self.df = df.copy()
         self.variant = routine
-        self.Routine= self.routines[self.variant]
+        self.Routine= self.routines[routine]
 
         # set by self._run_algorithm
         self.init_params = None                 
@@ -42,8 +42,8 @@ class Cluster_initialization:
         self._run_algorithm()
 
         # set by self._sample
-        self.sampled_init_params = None         # set by self._sample
-        self.sampled_init_params_array = None   # set by self._sample
+        self.sampled_init_params = None         
+        self.sampled_init_params_array = None   
 
     def _run_algorithm(self):
         init_params, labels = self.Routine.algorithm(self.df)
@@ -87,8 +87,8 @@ class Cluster_initialization:
         return selected_init_params_new
 
     def replace_init_param(self, init_param, idx):
-        """should be used to replace the atttributes for consistency reasons"""
-        
+        """should be used to replace the atttributes for consistency reasons
+        """
         pass
         
     def sample_new_starting_values(self, idx):

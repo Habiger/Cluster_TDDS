@@ -9,5 +9,5 @@ def select_prediction_df(run_data, run_results, init_routine, dataset, criterion
     return df_pred
 
 def select_prediction_df_single(results, df_scores, df_exp, criterion, param_idx=None):
-    df_scores.sort_values(criterion)
+    df_scores = df_scores.sort_values(criterion)
     return get_prediction_df(df_exp, results, df_scores, param_idx=param_idx)

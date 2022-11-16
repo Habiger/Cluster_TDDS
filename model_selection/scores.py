@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.metrics import silhouette_score, calinski_harabasz_score
-from em_algorithm.em_funcs import cdll2, E_step
+from em_algorithm.em_funcs import cdll, E_step
 from numba import njit
 import copy
 
@@ -22,7 +22,7 @@ def compute_KIC(X: np.ndarray, params: np.ndarray) -> float:
 def compute_ll(X: np.ndarray, params) -> float:
     N, d = X.shape[0], len(params)
     gammas = E_step(X, params)
-    ll = -cdll2(params, X, gammas) # the function returns the negative cdll; BUG: need to copmute the likelihood, not complete data likelihood
+    ll = -cdll(params, X, gammas) # the function returns the negative cdll; BUG: need to copmute the likelihood, not complete data likelihood
     return ll
 
 def compute_silhouette(X: np.ndarray, params: np.ndarray) -> float:

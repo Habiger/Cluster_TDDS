@@ -17,7 +17,7 @@ def plot_clustering_assessment(run_data, run_results, init_routine, dataset, cri
 
 
 def plot_clustering_assessment_single(results, df_scores, df_exp, criterion, param_idx=None):
-    df_pred = select_prediction_df_single(results, df_scores, df_exp, criterion, param_idx=None)
+    df_pred = select_prediction_df_single(results, df_scores, df_exp, criterion, param_idx=param_idx)
     fig = _plot_clustering_assessment(df_pred)
     return fig
 

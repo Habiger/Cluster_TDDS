@@ -10,11 +10,12 @@ from shapely.geometry import Polygon, Point
 from cluster_initialization.parameter_dataclass import Params
 
 
-
-
-class RANDOM_inside_routine:
-    assigns_labels = False
+class Parameter:
     N_max = 2000
+    y_scale_range = (0.1, 2)
+
+class RANDOM_inside_routine(Parameter):
+    assigns_labels = False  # probably not useful; indented to make automated plotting easier
 
     @classmethod
     def algorithm(cls, df: pd.DataFrame) -> Dict[int, Params]:
@@ -26,8 +27,8 @@ class RANDOM_inside_routine:
         for cl in range(cls.N_max):
             params = Params(cl)
             params.x.mu, params.y.mu = cls._get_xy(logx_min, logx_max, y_min, y_max, polygon)
-            params.y.std =  np.random.uniform(0.1, 2)
-            params.mix_coef = 1
+            params.y.std =  np.random.uniform(cls.y_scale_range[0], cls.y_scale_range[1])
+            params.mix_coef = 1           # will be normalized in `Cluster_Initialization`
             params_dict[cl] = params
         return params_dict, None   # None indicates that the algorithm returns no labels for the original datapoints
 

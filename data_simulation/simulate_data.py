@@ -14,21 +14,23 @@ class SimulationParameter:
     norm_loc_range =  (0.5, 7)
     norm_scale_range = (0.1, 1)
     cluster_number_range = (1, 5)
-    cluster_size_range = (2, 100)
+    cluster_size_range = (1, 100)
+    min_datapoints = 5 # OPTICS Initialization Routine needs at least 5 points because of min_samples parameter
     
 class Cluster(SimulationParameter):
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)        # sets manually specified simulation parameters
-        self.size = self._get_size()
-        self.exp_param = self._get_distr_params_exp()
-        self.norm_param = self._get_distr_params_norm()
-        self.coordinates = self._get_coordinates()
 
-    def _get_size(self):
+        self.size = self._sample_size()
+        self.exp_param = self._sample_exp_distr_params()
+        self.norm_param = self._sample_norm_distr_params()
+        self.coordinates = self._sample_coordinates()
+
+    def _sample_size(self):
         possible_size_numbers = [i for i in range(self.cluster_size_range[0], self.cluster_size_range[1]+1)]
         return random.choice(possible_size_numbers)
 
-    def _get_distr_params_exp(self):
+    def _sample_exp_distr_params(self):
         params = {
             "scale": np.exp(np.random.uniform(
                 low = np.log(self.exp_scale_range[0]), 
@@ -38,7 +40,7 @@ class Cluster(SimulationParameter):
             }
         return params
 
-    def _get_distr_params_norm(self):
+    def _sample_norm_distr_params(self):
         params = {
             "loc": np.random.uniform(
                 low=self.norm_loc_range[0], 
@@ -52,7 +54,7 @@ class Cluster(SimulationParameter):
             }
         return params
 
-    def _get_coordinates(self):
+    def _sample_coordinates(self):
         x, y = np.random.exponential(**self.exp_param), np.random.normal(**self.norm_param)
         return pd.DataFrame({"x": x, "y": y})
 
@@ -70,19 +72,29 @@ class Cluster(SimulationParameter):
             "scale": row.y_std, 
             "size": obj.size
             }
-        obj.coordinates = obj._get_coordinates()
+        obj.coordinates = obj._sample_coordinates()
         return obj
 
 
 class Experiment(SimulationParameter):
     def __init__(self, **kwargs):
-        self.__dict__.update(kwargs)           # sets manually specified Simulation Parameters
-        self.n_cluster = self._get_cluster_number()
-        self.cluster = [Cluster(**kwargs) for i in range(self.n_cluster)]
+        self.__dict__.update(kwargs)    # sets manually specified Simulation Parameters
+
+        self.n_cluster = None           # will be set by `_simulate_experiment()`
+        self.cluster = None             # will be set by `_simulate_experiment()`
+        self._simulate_experiment(kwargs)
+
         self.df = self._get_df()
         self.X = self.df[["x", "y"]].to_numpy(copy=True)
 
-    def _get_cluster_number(self):
+    def _simulate_experiment(self, kwargs):
+        n_datapoints = 0
+        while n_datapoints < self.min_datapoints:
+            self.n_cluster = self._sample_cluster_number()
+            self.cluster = [Cluster(**kwargs) for i in range(self.n_cluster)]
+            n_datapoints = len(self._get_df().index)
+
+    def _sample_cluster_number(self):
         possible_cluster_numbers = [i for i in range(self.cluster_number_range[0], self.cluster_number_range[1]+1)]
         return random.choice(possible_cluster_numbers)
 
