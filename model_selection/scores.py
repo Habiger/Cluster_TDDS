@@ -34,6 +34,8 @@ def compute_silhouette(X: np.ndarray, params: np.ndarray) -> float:
         return silhouette_score(X, labels, metric = "mahalanobis")
 
 def compute_MDL(X: np.ndarray, params: np.ndarray) -> float:
+    """is the same as BIC-score
+    """
     N, d, K = X.shape[0], len(params), len(params)//4
     ll = compute_ll(X, params)
     m = (K-1) + K * 3  # model free parameters: first-> [sum(mix_coefs) = 1] => d-1    +    3 per cluster ( 2x mean, 1x std)
@@ -76,7 +78,7 @@ def compute_MML(X, params):
     #gammas = E_step(X, params)
     return d_component/2 * np.sum(np.log(N*params[::4]/12))  + K/2 * np.log(N/12) + K*(d_component+1)/2 - ll
 
-scores = {
+criteria_dict = {
     "ll": {"func": compute_ll, "rank_params": {"ascending": False}, "use_in_total_score": True},
     "AIC": {"func": compute_AIC, "rank_params": {"ascending": True}, "use_in_total_score": True},
     "BIC": {"func": compute_BIC, "rank_params": {"ascending": True}, "use_in_total_score": True},

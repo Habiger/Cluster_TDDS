@@ -86,11 +86,6 @@ class Cluster_initialization:
             selected_init_params_new.append(corrected_param_dict)
         return selected_init_params_new
 
-    def replace_init_param(self, init_param, idx):
-        """should be used to replace the atttributes for consistency reasons
-        """
-        pass
-        
     def sample_new_starting_values(self, idx):
         misbehaving_starting_values = self.sampled_init_params_array[idx]
         K = len(misbehaving_starting_values)//4
