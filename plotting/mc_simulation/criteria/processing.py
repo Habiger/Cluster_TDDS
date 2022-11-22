@@ -1,40 +1,41 @@
 import pandas as pd
 
 def get_score_correctly_identified_clusters(df_total, criterion, init_routine):
-    True_Cluster_number_perf = {}
+    True_N_Cluster_perf = {}
     n_correct_all_clusternumbers, n_total_all_clusternumbers = 0, 0
-    for True_Cluster_number in df_total.True_Cluster_number.unique():
+    for True_N_Cluster in df_total.True_N_Cluster.unique():
         n_correct, n_total = 0, 0
-        df1 = df_total[df_total.True_Cluster_number == True_Cluster_number]
+        df1 = df_total[df_total.True_N_Cluster == True_N_Cluster]
         df1 = df1[df1.init_routine == init_routine]
         for dataset in df1.dataset.unique():
             df = df1[df1.dataset == dataset]
             df = df[df[criterion] == 1]
-            n_correct += df.identified_cluster.values[0]
-            n_total += df.True_Cluster_number.values[0]
-        True_Cluster_number_perf[True_Cluster_number] = [n_correct / n_total]
+            df = df.sort_values("ll_score", ascending=False) # if they have the same score, rank by "ll"
+            n_correct += df.iloc[0, df.columns.get_loc("number_identified_cluster")]
+            n_total += df.iloc[0, df.columns.get_loc("True_N_Cluster")] 
+        True_N_Cluster_perf[True_N_Cluster] = [n_correct / n_total]
         n_correct_all_clusternumbers += n_correct
         n_total_all_clusternumbers += n_total
-    True_Cluster_number_perf["All_clusternumbers"] = [n_correct_all_clusternumbers / n_total_all_clusternumbers]
-    df_routine_perf = pd.DataFrame.from_dict(data = True_Cluster_number_perf).melt(var_name="True cluster number", value_name="correctly_identified_clusters")
+    True_N_Cluster_perf["All_clusternumbers"] = [n_correct_all_clusternumbers / n_total_all_clusternumbers]
+    df_routine_perf = pd.DataFrame.from_dict(data = True_N_Cluster_perf).melt(var_name="True cluster number", value_name="correctly_identified_clusters")
     return df_routine_perf
 
 def get_correctly_identified_clusters_by_best_model(df_total, init_routine):
-    True_Cluster_number_perf = {}
+    True_N_Cluster_perf = {}
     n_correct_all_clusternumbers, n_total_all_clusternumbers = 0, 0
-    for True_Cluster_number in df_total.True_Cluster_number.unique():
+    for True_N_Cluster in df_total.True_N_Cluster.unique():
         n_correct, n_total = 0, 0
-        df1 = df_total[df_total.True_Cluster_number == True_Cluster_number]
+        df1 = df_total[df_total.True_N_Cluster == True_N_Cluster]
         df1 = df1[df1.init_routine == init_routine]
         for dataset in df1.dataset.unique():
             df = df1[df1.dataset == dataset]
-            n_correct += df.identified_cluster.max()
-            n_total += df.True_Cluster_number.values[0]
-        True_Cluster_number_perf[True_Cluster_number] = [n_correct / n_total]
+            n_correct += df["number_identified_cluster"].max()
+            n_total += df.iloc[0, df.columns.get_loc("True_N_Cluster")] 
+        True_N_Cluster_perf[True_N_Cluster] = [n_correct / n_total]
         n_correct_all_clusternumbers += n_correct
         n_total_all_clusternumbers += n_total
-    True_Cluster_number_perf["All_clusternumbers"] = [n_correct_all_clusternumbers / n_total_all_clusternumbers]
-    df_routine_perf = pd.DataFrame.from_dict(data = True_Cluster_number_perf).melt(var_name="True cluster number", value_name="correctly_identified_clusters")
+    True_N_Cluster_perf["All_clusternumbers"] = [n_correct_all_clusternumbers / n_total_all_clusternumbers]
+    df_routine_perf = pd.DataFrame.from_dict(data = True_N_Cluster_perf).melt(var_name="True cluster number", value_name="correctly_identified_clusters")
     return df_routine_perf
 
 def wrapper_get_correctly_identified_clusters(df_total, init_routines, ranks):

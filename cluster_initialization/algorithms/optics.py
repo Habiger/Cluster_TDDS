@@ -79,7 +79,7 @@ class OPTICS_routine:
 
 
     @classmethod
-    def get_single_init_param_sample_rnd(cls, init_params, K):
+    def get_single_init_param_sample_rnd(cls, init_params, K): #BUG check for infinite/long loop; maybe if same values repeat...
         """from rnd: used for sampling new starting values for replacing misbehaving starting values (singularities)
 
         Args:

@@ -7,6 +7,9 @@ from data_simulation.simulate_data import Experiment
 from cluster_initialization.init_class import Cluster_initialization
 from em_algorithm.em_class import EM
 
+
+
+
 def run_MC_simulation(
     N_experiments = 10, 
     parallel_params={}, 
@@ -17,12 +20,16 @@ def run_MC_simulation(
     ):
         
     simulated_experiments = [Experiment(**experiment_params) for i in range(N_experiments)]
-    results = {}
+    parallel_results = {}
     for init_routine in init_routines:
         parallel = Parallel(**parallel_params) 
-        parallel_results = parallel(delayed(cluster_experiment)(init_routine, cluster_init_params, em_params, df_experiment=experiment.df) for experiment in simulated_experiments)
-        results[init_routine] = merge_parallel_results(parallel_results)
+        parallel_results[init_routine] = parallel(delayed(cluster_experiment)(init_routine, cluster_init_params, em_params, df_experiment=experiment.df) for experiment in simulated_experiments)
         print("Init_routine run has successfully finished")
+    
+    results = {}
+    for init_routine in init_routines:
+        results[init_routine] = merge_parallel_results(parallel_results[init_routine])
+        
 
     merged_results = merge_init_routine_results(results)
     df_results, model_data = create_df_from_results(merged_results)
@@ -38,7 +45,7 @@ def include_true_clusternumber(df_results, model_data):
     df_results["True_N_Cluster"] = df_results["True_N_Cluster"].astype(int)
     return df_results
 
-
+#@catch_exceptions(logger)
 def cluster_experiment(init_routine, cluster_init_params, em_params, experiment_params=None, df_experiment=None):
     if experiment_params and df_experiment is None:                         # simulates experimental data
         df_experiment = Experiment(**experiment_params).df                        
@@ -46,7 +53,6 @@ def cluster_experiment(init_routine, cluster_init_params, em_params, experiment_
         pass
     else: 
         raise ValueError("You have to pass either experiment_params or experiment.")
-
     cluster_init = Cluster_initialization(df_experiment, routine=init_routine)
     cluster_init.sample(**cluster_init_params)
     em = EM(**em_params)

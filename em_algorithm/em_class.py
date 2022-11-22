@@ -4,7 +4,7 @@ import pandas as pd
 from em_algorithm.em_funcs import run_EM, compute_loglikelihood
 from cluster_initialization.init_class import Cluster_initialization
 
-class Parameter:
+class EMParameter:
     """default parameters for em-algorithm
     """
     em_tol = 1e-5
@@ -42,7 +42,7 @@ class Results:
         return self.__dict__
 
 
-class EM(Parameter):
+class EM(EMParameter):
     def __init__(self, **kwargs) -> None:
         self.__dict__.update(kwargs)        # sets manually specified Parameters
         self.em_params = self.get_em_params()

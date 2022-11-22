@@ -13,14 +13,14 @@ def get_position_of_best_models(df_total):
                 df = df_ir[df_ir.dataset == dataset]
                 df = df.sort_values(rank)
                 # position
-                position = df.identified_cluster.argmax()
+                position = df.number_identified_cluster.argmax()
                 positions.append(position)
                 # rank_of_cluster
                 rank_of_cluster = len(df.iloc[[i for i in range(position)], :].N_cluster.unique())
                 ranks_cluster.append(rank_of_cluster)
                 # position inside specific clusternumber
                 clusternumber = df.iloc[position, df.columns.get_loc("N_cluster")]
-                position_inside_clusternumber = df[df.N_cluster == clusternumber].identified_cluster.argmax()
+                position_inside_clusternumber = df[df.N_cluster == clusternumber].number_identified_cluster.argmax()
                 positions_inside_clusternumber.append(position_inside_clusternumber)
             result_dict_position[rank], result_dict_rank_cluster[rank], result_dict_position_inside_clusternumber[rank] = positions, ranks_cluster, positions_inside_clusternumber
         result_dict_position["init_routine"], result_dict_rank_cluster["init_routine"], result_dict_position_inside_clusternumber["init_routine"] = [init_routine] * len(df_ir.dataset.unique()), [init_routine] * len(df_ir.dataset.unique()), [init_routine] * len(df_ir.dataset.unique())

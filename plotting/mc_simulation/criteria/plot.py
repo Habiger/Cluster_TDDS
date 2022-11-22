@@ -3,12 +3,12 @@ from plotting.mc_simulation.criteria.processing import wrapper_get_correctly_ide
 
 
 def plot_comparison_criteria(df_total, settings):
-    init_routines, ranks = df_total.init_routine.unique(), [col for col in df_total.columns if "rank" in col]
+    init_routines, ranks = df_total.init_routine.unique(), [col for col in df_total.columns if "rank" in col[-4:]]
     df_all = wrapper_get_correctly_identified_clusters(df_total, init_routines, ranks)
 
     fig, axs = plt.subplots(nrows=len(init_routines))
     plt.subplots_adjust(hspace=0.4, wspace=0.4)
-    col_order = ['ll', 'AIC', 'BIC',  'MML','CH', 'silhouette','TOTAL', 'Total_prop', 'Best_Model']
+    col_order = ['ll', 'AIC', 'BIC',  'MML','CH', 'silhouette','Total_rank', 'Total_proportional', 'Best_Model']
     for i, init_routine in enumerate(init_routines):
         ax = axs[i]
         df = select_init_routine(df_all, init_routine)[col_order]

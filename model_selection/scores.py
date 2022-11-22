@@ -85,7 +85,7 @@ criteria_dict = {
     #"KIC": {"func": compute_KIC, "rank_params": {"ascending": True}},
     "MML": {"func": compute_MML, "rank_params": {"ascending": True}, "use_in_total_score": True},
     "silhouette": {"func": compute_silhouette, "rank_params": {"ascending": False}, "use_in_total_score": True}, # , "na_option": "bottom" should´nt be necessary anymore because
-    "CH": {"func": compute_CH, "rank_params": {"ascending": False}, "use_in_total_score": False},
+    "CH": {"func": compute_CH, "rank_params": {"ascending": False}, "use_in_total_score": True},
     #"CH_scaled": {"func": compute_CH_scaled, "rank_params": {"ascending": False}, "use_in_total_score": False},
     #"CH_scaled2": {"func": compute_CH_scaled2, "rank_params": {"ascending": False}, "use_in_total_score": True},
     
