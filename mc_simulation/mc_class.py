@@ -65,7 +65,7 @@ class MC(MCDefaultParameter):
 
     def include_data_from_true_models(self):  #TODO refactor
         self.model_data["datasets"] = [experiment.df for experiment in self.simulated_experiments]
-        self.model_data["distributions"] = [experiment.get_distr_params_df() for experiment in self.simulated_experiments]
+        self.model_data["true_models"] = [experiment.get_distr_params_df() for experiment in self.simulated_experiments]
         self.df_results = self.include_true_clusternumber(self.df_results, self.model_data)
 
 
@@ -109,7 +109,7 @@ class MC(MCDefaultParameter):
         elif type(df_experiment)==pd.DataFrame and experiment_params is None:   # passing experimental data as pd.dataframe[["x", "y"]]
             pass
         else: 
-            raise ValueError("You have to pass either experiment_params or experiment.")
+            raise ValueError("You have to pass either experiment_params or df_experiment.")
         cluster_init = Cluster_initialization(df_experiment, routine=init_routine)
         cluster_init.sample(**cluster_init_params)
         em = EM(**em_params)
