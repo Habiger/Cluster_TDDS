@@ -1,20 +1,28 @@
 import numpy as np
 import pandas as pd
+from dataclasses import dataclass
 
+from miscellaneous.parameter import Parameter, nested_dataclass
 from em_algorithm.em_funcs import run_EM, compute_loglikelihood
 from cluster_initialization.init_class import Cluster_initialization
 
-class EMParameter:
+@dataclass
+class Minimizer_Parameter(Parameter):
+    maxiter: int = 100
+@nested_dataclass
+class EM_Algorithm_Parameter(Parameter):
+    em_tol: float = 1e-5    
+    max_iter: int = 1000
+    min_mix_coef: float = 0.02
+    abs_tol_params: float = 1e-8
+    minimizer_options: Minimizer_Parameter = Minimizer_Parameter()
+    
+@nested_dataclass
+class EM_Parameter(Parameter):
     """default parameters for em-algorithm
     """
-    em_tol = 1e-5
-    max_iter = 1000
-    min_mix_coef = 0.02
-    abs_tol_params = 1e-8
-    minimizer_options = {
-        "maxiter": 100
-    } 
-    max_reiterations = 50  # number of times em algorithm should be rerun with different values when divergence occurs
+    max_reiterations: int = 50  # number of times em algorithm should be rerun with different values when divergence occurs
+    em_algorithm: EM_Algorithm_Parameter = EM_Algorithm_Parameter()
 
 
 class Results:
@@ -42,27 +50,12 @@ class Results:
         return self.__dict__
 
 
-class EM(EMParameter):
+class EM():
     def __init__(self, **kwargs) -> None:
-        self.__dict__.update(kwargs)        # sets manually specified Parameters
-        self.em_params = self.get_em_params()
+        self.params = EM_Parameter(**kwargs)
 
         # will be set by run method
         self.results = Results()
-
-
-    def get_em_params(self):
-        """Prepares parameters which will be passed to the run_EM function
-        """
-        em_params = {
-            "em_tol": self.em_tol,
-            "max_iter": self.max_iter,
-            "min_mix_coef": self.min_mix_coef,
-            "abs_tol_params": self.abs_tol_params,
-            "minimizer_options": self.minimizer_options
-        }
-        return em_params
-
 
     def run(self, df_experiment:pd.DataFrame, init_param_array: np.ndarray = None, cluster_init: Cluster_initialization = None):
         """Performs EM-Algorithm for either a single model (init_param_array) or a whole model selection (cluster_init). 
@@ -85,24 +78,26 @@ class EM(EMParameter):
 
 
     def _run_from_init_param_array(self, X: np.ndarray, init_param_array: np.ndarray):
-        (mixtures, iterations), execution_time = run_EM(X, init_param_array, **self.em_params)
+        (mixtures, iterations), execution_time = run_EM(X, init_param_array, **self.params.em_algorithm.get_dict())
         return (mixtures, iterations), execution_time
 
 
     def _run_from_Cluster_Init(self, X: np.ndarray, cluster_init: Cluster_initialization):
-        for em_model_idx, init_param_array in enumerate(cluster_init.sampled_init_params_array):
-            (mixtures, iterations), execution_time = run_EM(X, init_param_array, **self.em_params)
+        for em_model_idx, initial_values_array in enumerate(cluster_init.sampled_starting_values_arrays):
+            (mixtures, iterations), execution_time = run_EM(X, initial_values_array, **self.params.em_algorithm.get_dict())
             total_iterations, total_execution_time = iterations, execution_time
             j, ll = 0, compute_loglikelihood(mixtures, X)
-            while j < self.max_reiterations and not np.isfinite(ll):
+            while j < self.params.max_reiterations and not np.isfinite(ll):
                 # repeat em with new starting values
-                init_param_array = cluster_init.sample_new_starting_values(em_model_idx)
-                (mixtures, iterations), execution_time = run_EM(X, init_param_array, **self.em_params)
+                initial_values_array_new_sampled = cluster_init.sample_new_starting_values(em_model_idx)
+                if initial_values_array_new_sampled is None:
+                    break # if no new set of starting values can be found the reiteration cycle breaks
+                (mixtures, iterations), execution_time = run_EM(X, initial_values_array_new_sampled, **self.params.em_algorithm.get_dict())
                 total_iterations += iterations
                 total_execution_time += execution_time
                 j += 1
                 ll = compute_loglikelihood(mixtures, X)
-            self.results.update(mixtures, iterations, execution_time, total_iterations, total_execution_time, init_param_array, em_model_idx, j)
+            self.results.update(mixtures, iterations, execution_time, total_iterations, total_execution_time, initial_values_array, em_model_idx, j)
 
 
             

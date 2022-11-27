@@ -60,45 +60,39 @@ class OPTICS_routine:
     ##### Sample initial parameters and correct mixing coefficients ################################
 
     @classmethod
-    def get_sampled_init_params(cls, df, init_params, max_no_of_samples_per_cluster_number=10, K_max=15):
+    def get_sampled_init_params(cls, possible_starting_values, N_cluster_max, N_runs_per_clusternumber):
         """after getting candidates for cluster centroids (= init_params), 
         we need to sample them to get candidates for a defined number of clusters (=K_)
         """
-        cluster_numbers, K = init_params.keys(), len(init_params)
+        cluster_numbers, K = possible_starting_values.keys(), len(possible_starting_values)
         selected_init_clusters = []
-        for K_ in range(1, min(K, K_max)+1):
-            n_range =  int(min(binom(K, K_), max_no_of_samples_per_cluster_number)) # if possible max_samples, else max possible amount (limited by binomial coefficient)
+        for K_ in range(1, min(K, N_cluster_max)+1):
+            n_range =  int(min(binom(K, K_), N_runs_per_clusternumber)) # if possible max_samples, else max possible amount (limited by binomial coefficient)
             for _n in range(n_range):
                 pars = set(np.random.choice(list(cluster_numbers), size=K_, replace=False)) 
                 while pars in selected_init_clusters:   # ensures only unique samples
                     pars = set(np.random.choice(list(cluster_numbers), size=K_, replace=False)) 
                 selected_init_clusters.append(pars)
         selected_init_clusters = [list(set_) for set_ in selected_init_clusters]
-        selected_init_params = [{cl: copy.deepcopy(init_params[cl]) for cl in l} for l in selected_init_clusters]
+        selected_init_params = [{cl: copy.deepcopy(possible_starting_values[cl]) for cl in l} for l in selected_init_clusters]
         return selected_init_params
 
 
     @classmethod
-    def get_single_init_param_sample_rnd(cls, init_params, K): #BUG check for infinite/long loop; maybe if same values repeat...
-        """from rnd: used for sampling new starting values for replacing misbehaving starting values (singularities)
-
-        Args:
-            * init_params (?): `self.init_params` in 'Cluster_initialization` object \\
-            * K (int): number of clusters in this init param set
-
-        Returns:
-            dict[int]: new shuffled sample of init_params from init_params
-        """
-        cluster_keys = list(init_params.keys())
-        idx = np.random.choice(cluster_keys, size=K, replace=False)
-        return {key: val for key, val in init_params.items() if key in idx}
-
-
-
-    @classmethod
-    def get_single_init_param_sample(cls, init_params, K):
+    def get_single_init_param_sample(cls, possible_starting_values, K, sampled_starting_values_dict):
         """sample new init params; it is possible to get the same as has been used before #TODO ?
         """
-        cluster_numbers, K = init_params.keys(), len(init_params)
-        selected_clusters = np.random.choice(list(cluster_numbers), size=K, replace=False)
-        return {cl: copy.deepcopy(init_params[cl]) for cl in selected_clusters}
+        previously_selected_combinations = [set(init_param.keys()) for init_param in sampled_starting_values_dict]
+        possible_starting_values_keys = list(possible_starting_values.keys())
+        idxs = np.random.choice(possible_starting_values_keys, size=K, replace=False)
+        # search for new unqiue set of starting values
+        i, new_set_of_starting_values_found = 0, set(idxs) not in previously_selected_combinations
+        while i < 100 and not new_set_of_starting_values_found:
+            idxs = np.random.choice(possible_starting_values_keys, size=K, replace=False)
+            new_set_of_starting_values_found = set(idxs) not in previously_selected_combinations
+            i+=1
+        if new_set_of_starting_values_found:
+            return {cl: possible_starting_values[cl] for cl in idxs}
+        else:
+            return None # returns None if no new unique set of starting values has been found
+        

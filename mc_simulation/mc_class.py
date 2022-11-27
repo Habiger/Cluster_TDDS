@@ -1,154 +1,170 @@
 import pandas as pd
-from tqdm import tqdm
-from copy import deepcopy
+from dataclasses import dataclass
 from joblib import Parallel, delayed
-import logging
 
-from data_simulation.simulate_data import Experiment
-from cluster_initialization.init_class import Cluster_initialization
-from em_algorithm.em_class import EM
+from data_simulation.simulate_data import Experiment, ExperimentParameter
+from cluster_initialization.init_class import Cluster_initialization, Cluster_Initialization_Parameter
+from em_algorithm.em_class import EM, EM_Parameter
+
+from miscellaneous.parameter import Parameter, nested_dataclass
 from miscellaneous.exception_handler_decorator import catch_exceptions
-from miscellaneous.logger import create_logger, start_logger_if_necessary
+from miscellaneous.logger import Logger
 
-class MCDefaultParameter:
-    N_experiments = 5
-
-    parallel_params = {
-        "n_jobs": 10,
-        "verbose": 11,
-    }
-
-    init_routines = ["random_inside"]
-
-    experiment_params = {
-        "cluster_number_range": (1,5),
-        "min_datapoints": 5
-    }
-
-    em_params = {
-        "max_iter": 500,
-        "em_tol": 1e-5,
-        "min_mix_coef": 0.02
-    }
-
-    cluster_init_params = {
-        "N_cluster_max": 7,
-        "N_runs_per_clusternumber": 10
-    }
+@dataclass
+class Parallel_Parameter(Parameter):
+    n_jobs: int = 10
+    verbose: int = 11
 
 
-class MC(MCDefaultParameter):
-    logger = start_logger_if_necessary()
+@nested_dataclass
+class MCParameter(Parameter):
+    N_experiments: int = 5
+    parallel: Parallel_Parameter = Parallel_Parameter()
+    experiment: ExperimentParameter = ExperimentParameter()
+    em: EM_Parameter = EM_Parameter()
+    cluster_init: Cluster_Initialization_Parameter = Cluster_Initialization_Parameter()
 
+
+
+class MC:
+    logger = Logger.create_logger()
     def __init__(self, **kwargs) -> None:
-        self.__dict__.update(kwargs)
-        self.parallel_results = None
-        self.results = None
-        self.merged_parallel_results = None
-        self.merged_results = None
+        self.params =MCParameter(**kwargs)  #**update(MCParameter().get_dict(), kwargs)
+        self.logger.info(f"Initialization of a MC object with the following parameters has been carried out.\n{self.params}")
+
+        # processed results of the mc run:
+        self.model_data = None
+        self.df_results = None
+    
+
+    def load_experiments(self, experiments: list[Experiment]):
+        """load experiments created outside of this object
+
+        Args:
+            experiments (list[Experiment]): list of `Experiment` objects
+        """
+        self.experiments = experiments
+        self.N_experiments = len(experiments)
+    
+
+    def simulate_experiments(self, experiment_params: dict = None, N_experiments: int =None):
+        """Simulates experiments which then will be clustered by `self.run`.\\ 
+        If no `Args` are given, the default parameters will be used for the generation.
+
+        Args:
+            experiment_params (dict, optional): params used to create `Experiment` objects. Defaults to None.
+            N_experiments (int, optional): Number of `Experiment` objects created. Defaults to None.
+        """
+        if experiment_params is not None:
+            self.experiment_params = experiment_params
+        if N_experiments is not None:
+            self.N_experiments = N_experiments
+        self.experiments = [Experiment(**self.params.experiment.get_dict()) for i in range(self.params.N_experiments)]
 
 
     @catch_exceptions(logger)
     def run(self):
-        self._simulate_experiments()
-        parallel_results = self._cluster_experiments_parallel()
-        
-        # processing of results
-        merged_parallel_results = self._merge_parallel_results(parallel_results)
-        merged_results = self._merge_init_routine_results(merged_parallel_results)
-        self.df_results, self.model_data = self._create_df_from_results(merged_results) 
-        self.include_data_from_true_models(self.df_results, self.model_data)
-        # close filehandler of logger
-        for handler in self.logger.handlers[:]:
-            self.logger.removeHandler(handler)
-            handler.close()
+        self.logger.info(f"Starting the clustering of experimental data batch with init_routine {self.params.cluster_init.init_routine}.\n")
+        parallel_results = self._parallel_clustering()
 
-    def include_data_from_true_models(self):  #TODO refactor
-        self.model_data["datasets"] = [experiment.df for experiment in self.simulated_experiments]
-        self.model_data["true_models"] = [experiment.get_distr_params_df() for experiment in self.simulated_experiments]
-        self.df_results = self.include_true_clusternumber(self.df_results, self.model_data)
+        self.logger.info(f"\nClustering successfull; starting processing of results")
+        self.df_results, self.model_data = self._process_parallel_results(parallel_results)
 
+        self.logger.info(f"Processing successfull - logger will be closed - END\n\n")
+        Logger.close_logger()
+
+
+    @catch_exceptions(logger)
+    def _parallel_clustering(self):
+        """uses `joblib` library to perform the clustering of each experiment in parallel
+        """
+        parallel = Parallel(**self.params.parallel.get_dict()) 
+        parallel_results = parallel(delayed(self._cluster_experiment)(
+            self.params.cluster_init.get_dict(), 
+            self.params.em.get_dict(), 
+            i,
+            experiment.df
+            ) for i, experiment in enumerate(self.experiments)
+        )
+        self.logger.info(f"Clustering with init routine {self.params.cluster_init.init_routine} has finished.")
+        return parallel_results
+
+    @staticmethod
+    @catch_exceptions(logger)
+    def _cluster_experiment(cluster_init_params: dict, em_params: dict, i: int, df_experiment: pd.DataFrame):
+        """Method which each parallel process calls
+
+        Args:
+            init_routine (str): determine which Cluster Intialization method is used for the starting values
+            cluster_init_params (dict): parameters passed to `Cluster_Initialization`
+            em_params (dict): parameters passed to `EM`
+            i (int): index for each set of points the MC run analyses
+            df_experiment (pd.DataFrame): the dataframe containing the points to be clustered
+
+        Returns:
+            (dict): contains stats and results from the executed EM-algorithm
+        """
+        logger = Logger.reload_logger()  # needed because joblib sometimes messes things up
+        cluster_init = Cluster_initialization(df_experiment, **cluster_init_params)
+        cluster_init.sample()
+        em = EM(**em_params)
+        em.run(df_experiment, cluster_init=cluster_init)
+        logger.info(f"Experiment {i} has finished.")
+        return em.results.get_dict()
+
+    
+    @catch_exceptions(logger)
+    def _process_parallel_results(self, parallel_results):
+        """wrapper for processing results generated by `self._parallel_clustering()`
+        """
+        merged_results = self._merge_parallel_results(parallel_results)
+        df_results, model_data = self._create_df_from_results(merged_results) 
+        model_data = self._include_data_from_true_models(model_data)
+        # include clusternumbers into df_results:
+        df_results = self._include_true_clusternumber(df_results, model_data)
+        df_results = self._include_model_clusternumber(df_results, model_data)
+        return df_results, model_data
+
+
+    @catch_exceptions(logger)
+    def _merge_parallel_results(self, parallel_results):
+        merged_result = {key: [] for key in parallel_results[0].keys()}
+        merged_result["dataset"] = []
+        for dataset_idx, result in enumerate(parallel_results):
+            if result is None:
+                self.logger.warning(f"Custering of dataset {dataset_idx} has failed.")
+                continue
+            merged_result["dataset"] = merged_result["dataset"] + [dataset_idx for _i in range(len(result["iterations"]))]
+            for feature_name, list_ in result.items():
+                merged_result[feature_name] = merged_result[feature_name] + list_
+        return merged_result
+    
+    @catch_exceptions(logger)
+    def _create_df_from_results(self, merged_results, non_df_cols = ["inferred_mixtures", "starting_values"]):
+        df_result = pd.DataFrame.from_dict({key: val for key, val in merged_results.items() if key not in non_df_cols})
+        df_result = df_result.reset_index().rename(columns={"index": "model_idx"})
+        return df_result, {key: val for key, val in merged_results.items() if key in non_df_cols}
+
+    @catch_exceptions(logger)
+    def _include_data_from_true_models(self, model_data):
+        model_data["datasets"] = [experiment.df for experiment in self.experiments]
+        model_data["true_models"] = [experiment.get_distr_params_df() for experiment in self.experiments]
+        model_data["init_routine"] = self.params.cluster_init.init_routine
+        return model_data
 
     @staticmethod   
-    def include_true_clusternumber(df_results, model_data):
+    def _include_true_clusternumber(df_results, model_data):
         for dataset in df_results.dataset.unique():
             idx = df_results.dataset == dataset
             df_results.loc[idx, "True_N_Cluster"] = len(model_data["datasets"][dataset].cluster.unique())
         df_results["True_N_Cluster"] = df_results["True_N_Cluster"].astype(int)
         return df_results
 
-
-    
-    def _simulate_experiments(self):
-        self.simulated_experiments = [Experiment(**self.experiment_params) for i in range(self.N_experiments)]
-
-    @catch_exceptions(logger)
-    def _cluster_experiments_parallel(self):
-        start_logger_if_necessary()
-        parallel_results = {}
-        for init_routine in self.init_routines:
-            parallel = Parallel(**self.parallel_params) 
-            parallel_results[init_routine] = parallel(delayed(self._cluster_experiment)(
-                init_routine, 
-                self.cluster_init_params, 
-                self.em_params, 
-                i,
-                df_experiment=experiment.df
-                ) for i, experiment in enumerate(self.simulated_experiments)
-            )
-            self.logger.info("Init routine %s has finished.", init_routine, exc_info=1)
-        self.parallel_results = parallel_results
-        return parallel_results
-    
     @staticmethod
-    @catch_exceptions(logger)
-    def _cluster_experiment(init_routine, cluster_init_params, em_params, i, experiment_params=None, df_experiment=None):
-        logger = start_logger_if_necessary()
-        if experiment_params and df_experiment is None:                         # simulates experimental data
-            df_experiment = Experiment(**experiment_params).df                        
-        elif type(df_experiment)==pd.DataFrame and experiment_params is None:   # passing experimental data as pd.dataframe[["x", "y"]]
-            pass
-        else: 
-            raise ValueError("You have to pass either experiment_params or df_experiment.")
-        cluster_init = Cluster_initialization(df_experiment, routine=init_routine)
-        cluster_init.sample(**cluster_init_params)
-        em = EM(**em_params)
-        em.run(df_experiment, cluster_init=cluster_init)
-        logger.info(f"Experiment {i} has finished.", exc_info=1)
-        return em.results.get_dict()
-
-    @catch_exceptions(logger)
-    def _merge_parallel_results(self, parallel_results):
-        def merge_parallel_result(parallel_result):
-            merged_result = {key: [] for key in parallel_result[0].keys()}
-            merged_result["dataset"] = []
-            for dataset_idx, result in enumerate(parallel_result):
-                merged_result["dataset"] = merged_result["dataset"] + [dataset_idx for _i in range(len(result["iterations"]))]
-                for feature_name, list_ in result.items():
-                    merged_result[feature_name] = merged_result[feature_name] + list_
-            return merged_result
-
-        merged_parallel_results = {}
-        for init_routine in self.init_routines:
-            merged_parallel_results[init_routine] = merge_parallel_result(parallel_results[init_routine])
-
-        self.merged_parallel_results = merged_parallel_results
-        return merged_parallel_results
-
-    @catch_exceptions(logger)
-    def _merge_init_routine_results(self,merged_parallel_results):
-        merged_results = {key: [] for key in merged_parallel_results[list(merged_parallel_results.keys())[0]].keys()}
-        merged_results["init_routine"] = []
-        for init_routine, result in merged_parallel_results.items():
-            merged_results["init_routine"] = merged_results["init_routine"] + [init_routine for _i in range(len(merged_parallel_results[init_routine]["iterations"]))]
-            for key, val in result.items():
-                merged_results[key] = merged_results[key] + val
-        self.merged_results = merged_results
-        return merged_results
-
-    @catch_exceptions(logger)
-    def _create_df_from_results(self, merged_results, non_df_cols = ["inferred_mixtures", "starting_values"]):
-        df_result = pd.DataFrame.from_dict({key: val for key, val in merged_results.items() if key not in non_df_cols})
-        df_result = df_result.reset_index().rename(columns={"index": "model_idx"})
-        return df_result, {key: val for key, val in merged_results.items() if key in non_df_cols}
+    def _include_model_clusternumber(df_results, model_data):
+        N_cluster_list = []
+        for model in df_results.itertuples():
+            N_cluster_list.append(len(model_data["inferred_mixtures"][model.model_idx])//4)
+        df_results["N_cluster"] = N_cluster_list
+        return df_results
 

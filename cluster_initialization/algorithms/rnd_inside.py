@@ -33,17 +33,17 @@ class RANDOM_inside_routine(Parameter):
         return params_dict, None   # None indicates that the algorithm returns no labels for the original datapoints
 
     @classmethod
-    def get_sampled_init_params(cls, _df, init_params, K_max, N_runs_per_clusternumber):
-        cluster_keys = list(init_params.keys())
+    def get_sampled_init_params(cls, possible_starting_values_dict, K_max, N_runs_per_clusternumber):
+        cluster_keys = list(possible_starting_values_dict.keys())
         sampled_params = []
         for K in range(1, K_max+1):
             for _n in range(0, N_runs_per_clusternumber):
                 idx = np.random.choice(cluster_keys, size=K, replace=False)
-                sampled_params.append({key: val for key, val in init_params.items() if key in idx})
+                sampled_params.append({key: val for key, val in possible_starting_values_dict.items() if key in idx})
         return sampled_params
 
     @classmethod
-    def get_single_init_param_sample(cls, init_params, K):
+    def get_single_init_param_sample(cls, possible_starting_values_dict, K, *args):
         """used for sampling new starting values for replacing misbehaving starting values (singularities)
 
         Args:
@@ -53,9 +53,9 @@ class RANDOM_inside_routine(Parameter):
         Returns:
             dict[int]: new shuffled sample of init_params from init_params
         """
-        cluster_keys = list(init_params.keys())
+        cluster_keys = list(possible_starting_values_dict.keys())
         idx = np.random.choice(cluster_keys, size=K, replace=False)
-        return {key: val for key, val in init_params.items() if key in idx}
+        return {key: val for key, val in possible_starting_values_dict.items() if key in idx}
 
     @classmethod
     def _get_polygon(cls, df) -> Polygon:

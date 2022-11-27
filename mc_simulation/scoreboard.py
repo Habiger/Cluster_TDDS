@@ -4,21 +4,12 @@ import pandas as pd
 from model_selection.scores import criteria_dict
 
 def create_scoreboard(df_results, model_data):
-    df_results = include_model_clusternumber(df_results, model_data)
     df_scores = calculate_scores(df_results, model_data)
     df_scores, df_scores_singular = filter_singular_models(df_scores)
     df_scores = calculate_total_proportional_score(df_scores, criteria_dict)
     df_scores = include_score_ranks(df_scores, criteria_dict)
     df_scores = df_scores.sort_values(["dataset","Total_rank_rank", "ll_score"])
     return df_scores, df_scores_singular
-
-
-def include_model_clusternumber(df_results, model_data):
-    N_cluster_list = []
-    for _i, model in df_results.iterrows():
-        N_cluster_list.append(len(model_data["inferred_mixtures"][model.model_idx])//4)
-    df_results["N_cluster"] = N_cluster_list
-    return df_results
 
 
 def calculate_scores(df_results, model_data):
