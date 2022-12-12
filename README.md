@@ -21,9 +21,9 @@ flowchart TD
     H --> I{{... and multiple runs}}
     I --> C(/em)
     
-    B-. rerun .-> C
+    B-. new starting values .-> C
     
-    C --> G{misbehaving result?}
+    C --> G{misbehaving\nresult?}
     G-. Yes .-> B
     G -- No --> D(/model_selection)
     D --> E(((best model)))
@@ -49,5 +49,6 @@ flowchart TD
     ├── /miscellanous         # uncategorized small tools used across the core module
     └── ...
   
-## 
+## Results
+
 
