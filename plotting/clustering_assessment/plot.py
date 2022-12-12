@@ -6,7 +6,7 @@ import colorcet as cc
 import numpy as np
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
-from mc_simulation.post_processing import get_prediction_df
+from postanalysis.post_processing_true_models import get_prediction_df
 
 
 def plot_clustering_assessment(model_data, df_scores, model_idx):
@@ -15,19 +15,13 @@ def plot_clustering_assessment(model_data, df_scores, model_idx):
 
     df = get_prediction_df(df_scores, model_data, model_idx)
 
-
-
     fig, ax = plt.subplots(facecolor='white')
     plt.box(False)
-
-
 
     N_pred_cluster = len(df.prediction_cluster.unique())
     n_row_grid = int(3+N_pred_cluster/5) +2
     fig.set_size_inches(n_row_grid*5, 20)
     gs = fig.add_gridspec(n_row_grid, 6)
-
-
 
     ########################################### general figure ###################################################################
     title = f"Analysis of Model No. {model_idx}"

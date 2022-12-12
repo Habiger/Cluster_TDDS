@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import colorcet as cc
 
-from em_algorithm.em_funcs import gamma
+from clustering.em.em_algorithm import gamma
 
 def plot_responsibilities(experiment, params_array):
     #TODO set color range fixed
