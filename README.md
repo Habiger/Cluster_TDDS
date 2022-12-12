@@ -17,9 +17,8 @@ the decision was made to utilize the Expectation-Maximization Algorithm (EM-Algo
 flowchart TD
     A(/input_data) -- load experimental data --> J(clustering.py)
     J -- parallelized --> B(/initialization)
-    B -- starting values --> H{{for different clusternumbers}}
-    H --> I{{... and multiple runs}}
-    I --> C(/em)
+    B -- starting values --> H{{for different clusternumbers\nand multiple runs}}
+    H --> C(/em)
     
     B-. new starting values .-> C
     
