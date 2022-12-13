@@ -6,6 +6,8 @@ This repository depicts the current state of my undergraduated thesis. (work ong
 
 The purpose of this project is to create a fully automated unsupervised learning algorithm to identify individual defects of MOSFETs from time-dependent defect spectroscopy (TDDS) data.
 
+![cluster_figure](https://user-images.githubusercontent.com/97874941/207177133-6837ccb3-07af-4440-a676-dc4b8f9af48b.svg)
+
 ### Idea
 
 The reasonable assumption, that the measurements can be modelled 
