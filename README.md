@@ -41,7 +41,7 @@ it possesses some inconveniences, which make it hard to fully automate the clust
 
  
 ### Flowchart
-This flowchart (hopefully) gives you a rough idea on how the module works and how the different components relate to each other. 
+This flowchart (hopefully) gives you a rough idea on how the module works and how its different components relate to each other. 
 
 ```mermaid
 flowchart TD
