@@ -14,7 +14,7 @@ The reasonable assumption, that the measurements can be modelled
 by a bivariate mixture distribution, incentivizes the use of a model-based clustering approach. After promising initial results 
 the decision was made to utilize the Expectation-Maximization Algorithm (EM-Algorithm).
 
-## Flowchart
+## How does the clustering process work?
 ```mermaid
 flowchart TD
     A(/input_data) -- load experimental data --> J(clustering.py)
