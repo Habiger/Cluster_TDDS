@@ -4,25 +4,24 @@ This repository depicts the current state of my undergraduated thesis. (work ong
     .
     ├── ...
     ├── /clustering           # core module
-    │   ├── /em                     # low-level implementation of the EM-Algorithm
-    │   ├── /initialization         # starting value routines (multiple options)
-    │   ├── /input_data             # simulate/load experimental data
-    │   ├── /model_selection        # select best models according to specific criteria
-    │   └── clustering.py           # high-level entry point for the final application
-    |
-    ├── /miscellanous         # uncategorized small tools used across the core module
+    │   ├── /em               ## low-level implementation of the EM-Algorithm
+    │   ├── /initialization   ## starting value routines (multiple options)
+    │   ├── /input_data       ## simulate/load experimental data
+    │   ├── /miscellanous     ## uncategorized small tools
+    │   ├── /model_selection  ## select best models according to specific criteria
+    │   └── clustering.py     ## high-level entry point for the final application
     └── ...
 
 **Installation** (currently not recommended): 
 * clone repository
 * obtain required packages via ```pip install requirements.txt``` 
 
-
 ## Project Overview
 ### Objective
 
 The purpose of this project is to create a fully automated unsupervised learning algorithm to identify individual defects of MOSFETs from time-dependent defect spectroscopy (TDDS) data.
-
+  
+*Starting with the input data in the left picture, the goal is to assign each point to its generating defect. The true assignments can be observed in the right picture as colored clusters.*
 ![cluster_figure](https://user-images.githubusercontent.com/97874941/207207841-bc978c52-2cd5-4f18-b1fe-e30661fea504.svg)
 
 ### Idea
@@ -63,7 +62,6 @@ flowchart TD
     style C stroke-width:4px,stroke-dasharray: 5 5
 ```
     
-
   
 ## Interim results
 This is the simulated input data from the *Objective* section above clustered by this module.  
