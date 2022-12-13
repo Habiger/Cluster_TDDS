@@ -66,7 +66,7 @@ flowchart TD
 
   
 ## Interim results
-This is the simulated input data from the `Objective` section above clustered by this module.  
+This is the simulated input data from the *Objective* section above clustered by this module.  
 Feel free to have a look at ```example_notebook_README.ipynb``` if you want to see how this example has been generated.  
   
 
