@@ -1,2 +1,4 @@
 __pycache__/
 *.log
+*.svg
+/0_jupyter_notebooks

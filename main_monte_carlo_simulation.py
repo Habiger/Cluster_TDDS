@@ -2,7 +2,7 @@ import datetime
 import os
 
 from clustering.input_data.simulated_experiment_class import SimulatedExperiment, SimulatedExperimentParameter
-from clustering.clustering_class import EMClustering
+from clustering.clustering import EMClustering
 
 def create_result_dir():
     now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -59,3 +59,6 @@ def main():
     mc = EMClustering(**mc_params)
     mc.load_experiments(experiment_data)
     mc.save_results()
+
+if __name__ == "__main__":
+    main()

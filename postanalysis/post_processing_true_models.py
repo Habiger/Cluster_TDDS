@@ -7,7 +7,7 @@ from clustering.post_processing import predict_clusters
 def include_true_clusternumber(df_results: pd.DataFrame, model_data: dict) -> pd.DataFrame:
     for dataset in df_results.dataset.unique():
         idx = df_results.dataset == dataset
-        df_results.loc[idx, "True_N_Cluster"] = len(model_data["datasets"][int(dataset)].cluster.unique())
+        df_results.loc[idx, "True_N_Cluster"] = len(model_data["datasets"][dataset].cluster.unique())
     df_results["True_N_Cluster"] = df_results["True_N_Cluster"].astype(int)
     return df_results
 

@@ -6,7 +6,7 @@ def predict_clusters(df_scores: pd.DataFrame, model_data: dict, model_idx: int):
     """includes responsibilities for predicted distributions into dataset df
 
     Args:
-        model_data (dict): contains the predicted parameters of the underlying mixture and the dataset
+        model_data (dict): contains the predicted parameters of the underlying mixture and the original dataset
         df_scores (pd.DataFrame): contains the scores of the different competing models
         model_idx (int): model to use for prediction
 
@@ -14,7 +14,7 @@ def predict_clusters(df_scores: pd.DataFrame, model_data: dict, model_idx: int):
         df: responsibilities for clusters included
     """
     dataset_idx = df_scores[df_scores.model_idx == model_idx].dataset.values[0]
-    df = model_data["datasets"][int(dataset_idx)].copy()
+    df = model_data["datasets"][dataset_idx].copy()
     X = df[["x", "y"]].to_numpy(copy=True)
     inferred_mixture_params = model_data["inferred_mixtures"][model_idx]
 

@@ -47,7 +47,8 @@ class EMClustering:
         # processed results of the clustering run:
         self.model_data = None
         self.df_results = None
-    
+        # 
+        self.df_scores = None
 
     def load_experiments(self, experiments: list[Experiment]):
         """Load experiments; look at `Experiment` class docstring for further information.
@@ -160,10 +161,13 @@ class EMClustering:
         df_results["N_cluster"] = N_cluster_list
         return df_results
 
-    def select_best_models(self):
+    def select_best_models(self): #TODO
         """determine best model according to model_selection
         """
         pass
+
+    def get_scoreboard(self):
+        return create_scoreboard(self.df_results, self.model_data)[0]
 
     def save_results(self):
         # prepare data to be saved

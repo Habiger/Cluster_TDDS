@@ -15,7 +15,7 @@ def plot_clustering_assessment(model_data, df_scores, model_idx):
 
     df = get_prediction_df(df_scores, model_data, model_idx)
 
-    fig, ax = plt.subplots(facecolor='white')
+    fig= plt.figure(facecolor='white')
     plt.box(False)
 
     N_pred_cluster = len(df.prediction_cluster.unique())
@@ -86,6 +86,7 @@ def plot_clustering_assessment(model_data, df_scores, model_idx):
     ax_subtitle = fig.add_subplot(gs[4, :5])
     ax_subtitle.set_title("Posterior Probabilities", size=sup_axes_title_size, pad=60)
     ax_subtitle._frameon = False
+    ax_subtitle.tick_params(top=False, bottom=False, left=False, right=False, labelleft=False, labelbottom=False)
     cmap = sns.cubehelix_palette(as_cmap=True)
     cm_norm = mpl.colors.Normalize(vmin=0., vmax=1.0)
     params = model_data["inferred_mixtures"][model_idx]
@@ -99,23 +100,31 @@ def plot_clustering_assessment(model_data, df_scores, model_idx):
 
         ax_res.scatter(np.log(params[1+i*4]), params[2+i*4], c="orange", label="Posterior Distribution Parameter")
         if i == 0:
-            ax_res.legend(loc="center left", bbox_to_anchor=(0.1, 1.4), fontsize=20)
+            ax_res.legend(loc="center left", bbox_to_anchor=(0.1, 1.25), fontsize=15)
+            #ax_res.tick_params(top=False, bottom=False, left=False, right=False, labelleft=False, labelbottom=False)
+        #ax_res.tick_params(top=False, bottom=False, left=False, right=False, labelleft=False, labelbottom=False)
 
         #fig.colorbar()
+
     ax_cb = fig.add_subplot(gs[4:,5])
     plt.box(False)
-    ax_cb2 = inset_axes(ax_cb, width="20%", height="80%", loc="center")
-    ax_cb2.set_title("Probabilities", size = 20, color="black", pad=30)
-    plt.box(False)
+    ax_cb.tick_params(top=False, bottom=False, left=False, right=False, labelleft=False, labelbottom=False)
+    ax_cb2 = inset_axes(ax_cb, width="20%", height="80%", loc="center", )
+    
+    ax_cb2.set_title("Probabilities", size = 20, color="black", pad=10)
+    #ax_cb.tick_params(top=False, bottom=False, left=False, right=False, labelleft=False, labelbottom=False)
+    #ax_cb2.tick_params(top=False, bottom=False, left=False, right=False, labelleft=False, labelbottom=False)
+    
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=cm_norm)
+
     sm.set_array([])
 
     cb = fig.colorbar(sm, ticks=np.linspace(0,1, 11),cax=ax_cb2, orientation="vertical", shrink=0.5)
+    cb.ax.tick_params(top=False, bottom=False, left=False, right=False, labelleft=False, labelbottom=False)
 
     fg_color="black"
 
     cb.ax.yaxis.set_tick_params(color=fg_color, labelcolor=fg_color, labelsize=15)
-    #cb.set_label("Probabilities", color="black", size=20, rotation=270, pad=20) #, labelpad=30
 
     ########################### original data #############################################################################
     ax_og = fig.add_subplot(gs[3, 4:])
@@ -123,5 +132,6 @@ def plot_clustering_assessment(model_data, df_scores, model_idx):
         df_cl = df[df.cluster == cl]
         ax_og.scatter(np.log(df_cl.x), df_cl.y, c=c_palette[cl], alpha=0.65)
     ax_og.set_title("True Cluster", size=22)
+    fig.get_axes()[0].tick_params(top=False, bottom=False, left=False, right=False, labelleft=False, labelbottom=False)  # remove unwanted axis ticks
     plt.close()
     return fig

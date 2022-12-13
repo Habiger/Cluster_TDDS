@@ -13,7 +13,7 @@ from postanalysis.post_processing_true_models import get_prediction_df
 from clustering.input_data.simulated_experiment_class import SimulatedExperiment
 from clustering.model_selection.criteria.scoreboard import create_scoreboard
 from clustering.model_selection.criteria.functions import criteria_dict
-from clustering.clustering_class import EMClusteringParameter, EMClustering
+from clustering.clustering import EMClusteringParameter, EMClustering
 from miscellaneous.parameter_dataclass import Parameter, nested_dataclass
 
 

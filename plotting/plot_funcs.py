@@ -51,3 +51,49 @@ def plot_cluster(df, cluster_col, title=None):
         fig.suptitle(title, color="white", size=30)
     plt.close()
     return fig
+
+def plot_cluster_single_color(df, cluster_col, title=None):
+    fig, ax = plt.subplots()
+    fig.set_size_inches(20,10)
+    c_palette = sns.color_palette(cc.glasbey, n_colors=50).as_hex()
+    for i, cl in enumerate(sorted(df[cluster_col].unique())):
+        df_subset =  df[df[cluster_col] == cl]
+        if cl==-1:
+            ax.scatter(np.log(df_subset.x), df_subset.y, label="Noise", c="black", alpha=0.2)
+        else:
+            ax.scatter(np.log(df_subset.x), df_subset.y, label=cl, c="grey", alpha=0.8)    
+            #mean_x, mean_y = np.log(np.mean(df_subset.x)), np.mean(df_subset.y)
+            #ax.scatter(mean_x, mean_y, marker="x", c = c_palette[cl], s=200)
+    ax.set_xlabel(r"$\log{\frac{\tau_e}{1\ s}}$", size=25)
+    ax.set_ylabel(r"$\Delta V_{th}$", size=25)
+    ax.tick_params(axis='both', which='major', labelsize=15)
+    #ax.legend(title="Cluster")
+    if title is not None:
+        fig.suptitle(title, color="white", size=30)
+    plt.close()
+    return fig
+
+
+def plot_cluster_data_readme(df, cluster_col="cluster", title=None):
+    fig, ax = plt.subplots(ncols=2, facecolor="white")
+    fig.set_size_inches(25,10)
+    c_palette = sns.color_palette(cc.glasbey, n_colors=50).as_hex()
+    for i, cl in enumerate(sorted(df[cluster_col].unique())):
+        df_subset =  df[df[cluster_col] == cl]
+        if cl==-1:
+            ax[0].scatter(np.log(df_subset.x), df_subset.y, label="Noise", c="black", alpha=0.2)
+        else:
+            ax[0].scatter(np.log(df_subset.x), df_subset.y, label=cl, c="grey", alpha=0.8)    
+            ax[1].scatter(np.log(df_subset.x), df_subset.y, label=cl, c=c_palette[cl], alpha=0.8)    
+            mean_x, mean_y = np.log(np.mean(df_subset.x)), np.mean(df_subset.y)
+            ax[1].scatter(mean_x, mean_y, marker="x", c = c_palette[cl], s=200)
+    for i in range(2):
+        ax[i].set_xlabel(r"$\log{\frac{\tau_e}{1\ s}}$", size=25)
+        ax[i].set_ylabel(r"$\Delta V_{th}$", size=25)
+        ax[i].tick_params(axis='both', which='major', labelsize=15)
+        ax[i].set_facecolor("white")
+    ax[0].set_title("Example input for clustering", color="black", size=30)
+    ax[1].set_title("True cluster memberships\n(simulated data)", color="black", size=30)
+    ax[1].legend(title="Cluster", prop = {"size": 15}, fontsize=15, title_fontsize=20)
+    plt.close()
+    return fig
