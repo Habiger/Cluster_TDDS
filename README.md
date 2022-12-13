@@ -41,7 +41,7 @@ it possesses some inconveniences, which make it hard to fully automate the clust
 
  
 ### Flowchart
-This flowchart (hopefully) gives you a rough idea on how the module works and how its different components relate to each other. 
+This flowchart gives you a rough idea on how the module works and how its different components relate to each other. 
 
 ```mermaid
 flowchart TD
@@ -71,6 +71,4 @@ Feel free to have a look at ```example_notebook_README.ipynb``` if you want to s
 *We can see that the algorithm sucessfully reconstructed cluster 0 (red) and 4 (lime green). Cluster 2 (dark green) and 5 (pink) have been merged together with their bigger neighbours 1 (violet) and 3 (teal).*
 ![result_best_model](https://user-images.githubusercontent.com/97874941/207207821-f3f879fa-a809-4528-8470-09d96e48fa87.svg)
 
-
-Thank you for your interest! :)
 
