@@ -47,8 +47,8 @@ This flowchart (hopefully) gives you a rough idea on how the module works and ho
 flowchart TD
     A(/input_data) -- load experimental data --> J(clustering.py)
     J -- parallelized --> B(/initialization)
-    B -- starting values --> H{{for different clusternumbers\nand multiple runs}}
-    H --> C(/em)
+    B --> H{{for different clusternumbers\nand multiple runs}}
+    H -- starting values --> C(/em)
     B-. new starting values .-> C
     C --> G{misbehaving\nresult?}
     G-. Yes .-> B
