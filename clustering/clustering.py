@@ -5,13 +5,13 @@ import datetime
 from dataclasses import dataclass
 from joblib import Parallel, delayed
 
-from miscellaneous.parameter_dataclass import Parameter, nested_dataclass
-from miscellaneous.exception_handler_decorator import catch_exceptions
-from miscellaneous.logger import Logger
-from miscellaneous.save_json import save_dict_as_json
+from clustering.miscellaneous.parameter_dataclass import Parameter, nested_dataclass
+from clustering.miscellaneous.exception_handler_decorator import catch_exceptions
+from clustering.miscellaneous.logger import Logger
+from clustering.miscellaneous.save_json import save_dict_as_json
 
 from clustering.input_data.experiment_baseclass import Experiment
-from clustering.initialization.initialization_class import Initialization, InitializationParameter
+from clustering.initialization.initialization import Initialization, InitializationParameter
 from clustering.em.em_class import EM, EMParameter
 from clustering.model_selection.criteria.scoreboard import create_scoreboard
 
@@ -74,7 +74,7 @@ class EMClustering:
 
         self.logger.info("\nClustering successfull; starting processing of results")
         self.df_results, self.model_data = self._process_parallel_results(parallel_results)
-
+        self.df_scores,  = create_scoreboard(self.df_results, self.model_data)
         self.logger.info(
             "Processing successfull - Run has been finished - logger will be closed - END\n\n"
             )

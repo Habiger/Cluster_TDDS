@@ -4,9 +4,8 @@ from dataclasses import dataclass
 from scipy.spatial import ConvexHull
 from shapely.geometry import Polygon, Point
 
-from clustering.initialization.routines.distribution_dataclass import (
-    MixtureComponentDistribution,
-)
+from clustering.initialization.routines.distribution_dataclass import MixtureComponentDistribution
+
 from clustering.initialization.routines.base_classes import Routine, RoutineParameter
 
 

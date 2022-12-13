@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from miscellaneous.parameter_dataclass import Parameter
+from clustering.miscellaneous.parameter_dataclass import Parameter
 
 
 class Routine(ABC):

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from miscellaneous.parameter_dataclass import Parameter, nested_dataclass
 from clustering.em.em_algorithm import run_EM, compute_loglikelihood
-from clustering.initialization.initialization_class import Initialization
+from clustering.initialization.initialization import Initialization
 
 @dataclass
 class MinimizerParameter(Parameter):

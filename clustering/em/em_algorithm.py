@@ -3,7 +3,7 @@ import numpy as np
 from scipy.optimize import minimize
 from numba import njit
 
-from miscellaneous.execution_time_decorator import timeit
+from clustering.miscellaneous.execution_time_decorator import timeit
 
 
 @timeit

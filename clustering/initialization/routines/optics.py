@@ -6,8 +6,7 @@ from dataclasses import dataclass
 from sklearn.cluster import OPTICS
 from numpy.linalg import inv
 
-from miscellaneous.parameter_dataclass import nested_dataclass, Parameter
-
+from clustering.miscellaneous.parameter_dataclass import nested_dataclass, Parameter
 from clustering.initialization.routines.base_classes import RoutineParameter
 from clustering.initialization.routines.distribution_dataclass import MixtureComponentDistribution
 

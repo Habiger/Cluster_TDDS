@@ -6,8 +6,6 @@ from random import choices
 from clustering.initialization.routines.distribution_dataclass import MixtureComponentDistribution
 
 
-
-
 class RandomRoutine:
     """currently not working
     """
