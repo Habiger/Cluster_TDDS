@@ -12,6 +12,7 @@ This repository depicts the current state of my undergraduated thesis. (work ong
     |
     ├── /miscellanous         # uncategorized small tools used across the core module
     └── ...
+
 **Installation** (currently not recommended): 
 * clone repository
 * obtain required packages via ```pip install requirements.txt``` 
@@ -30,15 +31,17 @@ The reasonable assumption, that the measurements can be modelled
 by a bivariate mixture distribution, incentivizes the use of a model-based clustering approach. After promising initial results 
 the decision was made to utilize the Expectation-Maximization Algorithm (EM-Algorithm).
 
-### Problems to be solved
+### Problems (to be) solved
 Although the EM-Algorithm has proven itself over a wide range of application areas in the past, 
-it possesses some inconveniences, which make it tricky to fully automate the clustering process.
-* the outcome is strongly dependent on starting values
-* it cannot decide on the correct number of clusters
-* outliers can distort the outcome
-* isolated datapoints can lead to useless solutions in the form of divergent likelihoods
+it possesses some inconveniences, which make it tricky to fully automate the clustering process:
 
-### Flowchart ?
+* the outcome is highly dependent on starting values
+* it cannot decide on the correct number of clusters   
+* outliers can distort the outcome
+* isolated datapoints can lead to useless solutions in the form of mixtures with divergent likelihoods
+
+ 
+### Flowchart
 
 ```mermaid
 flowchart TD
@@ -58,10 +61,11 @@ flowchart TD
     style D stroke-width:4px,stroke-dasharray: 5 5
     style C stroke-width:4px,stroke-dasharray: 5 5
 ```
-   
-## Project structure  
-  
+    
 
   
 ## Interim results
+This is the simulated input data from the `"Objective"` section above clustered with the current algorithm.   
+
+*We can see the sucessfully reconstructed cluster 0 (red) and  4 (lime green). Cluster 2 (dark green) and 5 (pink) have been merged with their bigger neighbours 1 (violet) and 3 (teal).*
 ![result_best_model](https://user-images.githubusercontent.com/97874941/207207821-f3f879fa-a809-4528-8470-09d96e48fa87.svg)
