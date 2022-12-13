@@ -74,3 +74,5 @@ Feel free to have a look at ```example_notebook_README.ipynb``` if you want to s
 ![result_best_model](https://user-images.githubusercontent.com/97874941/207207821-f3f879fa-a809-4528-8470-09d96e48fa87.svg)
 
 
+Thank you for your interest! :)
+
