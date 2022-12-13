@@ -18,7 +18,7 @@ This repository depicts the current state of my undergraduated thesis. (work ong
 * obtain required packages via ```pip install requirements.txt``` 
 
 
-## Project Description
+## Project Overview
 ### Objective
 
 The purpose of this project is to create a fully automated unsupervised learning algorithm to identify individual defects of MOSFETs from time-dependent defect spectroscopy (TDDS) data.
