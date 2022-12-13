@@ -6,13 +6,22 @@ This repository depicts the current state of my undergraduated thesis. (work ong
 
 The purpose of this project is to create a fully automated unsupervised learning algorithm to identify individual defects of MOSFETs from time-dependent defect spectroscopy (TDDS) data.
 
-![cluster_figure](https://user-images.githubusercontent.com/97874941/207177133-6837ccb3-07af-4440-a676-dc4b8f9af48b.svg)
+![cluster_figure](https://user-images.githubusercontent.com/97874941/207207841-bc978c52-2cd5-4f18-b1fe-e30661fea504.svg)
+
 
 ### Idea
 
 The reasonable assumption, that the measurements can be modelled 
 by a bivariate mixture distribution, incentivizes the use of a model-based clustering approach. After promising initial results 
 the decision was made to utilize the Expectation-Maximization Algorithm (EM-Algorithm).
+
+### Problems to be solved
+Although the EM-Algorithm has proven itself over a wide range of application areas in the past, 
+it possesses some inconveniences, which make it tricky to fully automate the clustering process.
+* the outcome is strongly dependent on starting values
+* it cannot decide on the correct number of clusters
+* outliers can distort the outcome
+* isolated datapoints can lead to useless solutions in the form of divergent likelihoods
 
 ## How does the clustering process work?
 ```mermaid
@@ -50,6 +59,5 @@ flowchart TD
     ├── /miscellanous         # uncategorized small tools used across the core module
     └── ...
   
-## Results
-
-
+## Interim results
+![result_best_model](https://user-images.githubusercontent.com/97874941/207207821-f3f879fa-a809-4528-8470-09d96e48fa87.svg)
