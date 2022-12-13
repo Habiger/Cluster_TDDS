@@ -7,9 +7,9 @@ This repository depicts the current state of my undergraduated thesis. (work ong
     │   ├── /em               ## low-level implementation of the EM-Algorithm
     │   ├── /initialization   ## starting value routines (multiple options)
     │   ├── /input_data       ## simulate/load experimental data
-    │   ├── /miscellanous     ## uncategorized small tools
+    │   ├── /miscellanous     ## uncategorized tools
     │   ├── /model_selection  ## select best models according to specific criteria
-    │   └── clustering.py     ## high-level entry point for the final application
+    │   └── clustering.py     ## high-level access point for application
     └── ...
 
 **Installation** (currently not recommended): 
@@ -41,7 +41,7 @@ it possesses some inconveniences, which make it hard to fully automate the clust
 
  
 ### Flowchart
-This flowchart (hopefully) gives you a rough idea on how the module works and how the different components relate to each other. 
+This flowchart (hopefully) gives you a rough idea on how the module works and how its different components relate to each other. 
 
 ```mermaid
 flowchart TD
