@@ -33,7 +33,7 @@ the decision was made to utilize the Expectation-Maximization Algorithm (EM-Algo
 
 ### Problems (to be) solved
 Although the EM-Algorithm has proven itself over a wide range of application areas in the past, 
-it possesses some inconveniences, which make it tricky to fully automate the clustering process:
+it possesses some inconveniences, which make it hard to fully automate the clustering process:
 
 * the outcome is highly dependent on starting values
 * it cannot decide on the correct number of clusters   
