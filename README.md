@@ -39,15 +39,14 @@ it possesses some inconveniences, which make it tricky to fully automate the clu
 * isolated datapoints can lead to useless solutions in the form of divergent likelihoods
 
 ### Flowchart ?
+
 ```mermaid
 flowchart TD
     A(/input_data) -- load experimental data --> J(clustering.py)
     J -- parallelized --> B(/initialization)
     B -- starting values --> H{{for different clusternumbers\nand multiple runs}}
     H --> C(/em)
-    
     B-. new starting values .-> C
-    
     C --> G{misbehaving\nresult?}
     G-. Yes .-> B
     G -- No --> D(/model_selection)
