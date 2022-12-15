@@ -66,7 +66,7 @@ def _include_score_ranks(df_scores: pd.DataFrame, criteria_dict: dict):
         df_scores.loc[idxs, "Total_proportional" + "_rank"] = df_scores.loc[idxs, "Total_proportional_score"].rank(method="dense", ascending=False)
         # total rank score
         df_scores.loc[idxs, "Total_rank_score"] = df_scores.loc[idxs, [criteria+"_rank" for criteria, item in criteria_dict.items() if item["use_in_total_score"]]].sum(axis=1)
-        df_scores.loc[idxs, "Total_rank_rank"] = df_scores.loc[idxs, "Total_rank_score"].rank(method="dense").astype(int)
+        df_scores.loc[idxs, "Total_rank_rank"] = df_scores.loc[idxs, "Total_rank_score"].rank(method="dense").astype(int).values
     rank_cols = [col for col in df_scores.columns if "_rank" in col]
     df_scores[rank_cols] = df_scores[rank_cols].astype(int)
     return df_scores

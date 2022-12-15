@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from dataclasses import dataclass
 
-from miscellaneous.parameter_dataclass import Parameter, nested_dataclass
+from clustering.miscellaneous.parameter_dataclass import Parameter, nested_dataclass
 from clustering.em.em_algorithm import run_EM, compute_loglikelihood
 from clustering.initialization.initialization import Initialization
 

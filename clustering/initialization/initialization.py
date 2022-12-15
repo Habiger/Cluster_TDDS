@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from copy import deepcopy
 from dataclasses import field
 
-from miscellaneous.parameter_dataclass import Parameter, nested_dataclass
+from clustering.miscellaneous.parameter_dataclass import Parameter, nested_dataclass
 
 from clustering.initialization.routines.distribution_dataclass import MixtureComponentDistribution
 from clustering.initialization.routines.base_classes import RoutineParameter, Routine

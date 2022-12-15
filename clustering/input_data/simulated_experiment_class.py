@@ -6,7 +6,7 @@ import pandas as pd
 
 from dataclasses import dataclass
 
-from miscellaneous.parameter_dataclass import Parameter, nested_dataclass
+from clustering.miscellaneous.parameter_dataclass import Parameter, nested_dataclass
 from clustering.input_data.experiment_baseclass import Experiment
 
 @dataclass

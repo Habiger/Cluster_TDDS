@@ -10,12 +10,15 @@ def plot_comparison_criteria(df_total, settings):
     plt.subplots_adjust(hspace=0.4, wspace=0.4)
     col_order = ['ll', 'AIC', 'BIC',  'MML','CH', 'silhouette','Total_rank', 'Total_proportional', 'Best_Model']
     for i, init_routine in enumerate(init_routines):
-        ax = axs[i]
+        if len(init_routines) > 1:
+            ax = axs[i]
+        else:
+            ax = axs
         df = select_init_routine(df_all, init_routine)[col_order]
         df.plot(kind="bar", ax=ax)
-        axs[i].set_title(f"Initialization Routine: {init_routine}", color ="white")
-        axs[i].set_ylim((0,1))
-        axs[i].xaxis.set_tick_params(rotation=0)
+        ax.set_title(f"Initialization Routine: {init_routine}", color ="white")
+        ax.set_ylim((0,1))
+        ax.xaxis.set_tick_params(rotation=0)
         # Shrink current axis by 20%
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.9, box.height])

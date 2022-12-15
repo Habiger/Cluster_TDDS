@@ -27,7 +27,6 @@ class MultiModelMimicryParameter(Parameter):
     criterion: str = "ll_score"     # Goodness of Fit Measure (GOF)
     n_neighbors: int = 10
     pca_n_components: int = 2
-    N_runs_per_clusternumber: int = 3  # for EMClusteringParameter
     emc: EMClusteringParameter = EMClusteringParameter(**{
         "parallel": {
             "n_jobs": 10
@@ -44,12 +43,14 @@ class MultiModelMimicryParameter(Parameter):
 class MultiModelMimicry:
     def __init__(self, df_scores, model_data, **kwargs):
         self.params = MultiModelMimicryParameter(**kwargs)
-        self.candidate_model_idxs = self._select_candidate_models(df_scores, model_data)
-        self.df_scores = df_scores.loc[df_scores.model_idx.isin(self.candidate_model_idxs)] # only candidate models will be analysed
-        self.model_data = model_data        
-        self.M = len(self.candidate_model_idxs)   # Number of candidate models 
-        self.model_clusternumbers = [] # will be set by _simulate_parametric_bootstrapped_datasets()    
-        self.bs_dataset_array = self._simulate_parametric_bootstrapped_datasets()
+        self.df_scores = df_scores 
+        self.model_data = model_data
+        # will be set by self.select_candidate_models()
+        self.candidate_model_idxs: list[int] = None
+        self.M: int = None   # Number of candidate models 
+        self.bs_dataset_array : np.ndarray = None
+        # will be set by _simulate_parametric_bootstrapped_datasets()
+        self.model_clusternumbers = []     
         #will be set by self.run
         self.gofs = None
 
@@ -58,16 +59,19 @@ class MultiModelMimicry:
         self.df_gofs = self._process_cross_fit()
         
 
-    def _select_candidate_models(self, df_scores, model_data) -> list: #TODO
-        return sorted([13725, 13710, 13757])
+    def select_candidate_models(self, candidate_model_idx: list[int]) -> list: #TODO
+        self.candidate_model_idxs = sorted(candidate_model_idx)
+        self.df_scores = self.df_scores.loc[self.df_scores.model_idx.isin(self.candidate_model_idxs)]
+        self.M = len(self.candidate_model_idxs)
+        self.bs_dataset_array = self._simulate_parametric_bootstrapped_datasets()
 
     def _simulate_parametric_bootstrapped_datasets(self) -> np.ndarray:
         dataset_array = np.ndarray((self.M, self.params.N_bs, self.M), dtype=np.object_)  # M_model x N_bs x M_data
         for m_data, model_idx in enumerate(self.candidate_model_idxs):
             df_predict = get_prediction_df(self.df_scores, self.model_data, model_idx)
-            df_predict_cleaned = self._clean_outliers(df_predict)
-            self.model_clusternumbers.append(len(df_predict_cleaned.prediction_cluster.unique()))
-            df_predicted_mixtures = self.calculate_cluster_params(df_predict_cleaned)
+            #df_predict_cleaned = self._clean_outliers(df_predict) solved through soft assignments
+            self.model_clusternumbers.append(len(df_predict.prediction_cluster.unique()))
+            df_predicted_mixtures = self.calculate_cluster_params_soft(model_idx)
             dataset_array[:,:,m_data] = np.array([SimulatedExperiment.from_parametric_bootstrap(df_predicted_mixtures, f"{_i}999{model_idx}") for _i in range(self.params.N_bs)])[:]
         return dataset_array
 
@@ -142,24 +146,66 @@ class MultiModelMimicry:
         knn.fit(X, y)
         self.knn_model_probabilities = knn.predict_proba(X_obs)
         return knn.predict(X_obs)
+
+    def calculate_cluster_params_soft(self, model_idx):
+        df_predict = get_prediction_df(self.df_scores, self.model_data, model_idx)
+        df_n_points = self.get_number_of_points_in_prediction_cluster(df_predict)
+        df_cluster_distr_params = self.calculate_cluster_distr_params(self.model_data, model_idx)
+        return pd.merge(df_n_points, df_cluster_distr_params, on="prediction_cluster")
     
     @staticmethod
-    def calculate_cluster_params(df):
-        df_cl_grouped = df.groupby(["prediction_cluster"]).agg({"x": ["count","mean"], "y": ["mean", "std"]})
-        df_cl_grouped.columns = ['_'.join(col).strip() if col[1] else col[0] for col in df_cl_grouped.columns.values]
-        df_cl_grouped = df_cl_grouped.reset_index().rename(columns={"x_count": "n_points"})  
-        return df_cl_grouped
+    def calculate_cluster_distr_params(model_data, model_idx):
+        inferred_mixture = model_data["inferred_mixtures"][model_idx]
+        df_dict = {
+            "prediction_cluster": [str(i) for i in range(len(inferred_mixture)//4)],
+            "x_mean": [val for val in inferred_mixture[1::4]], 
+            "y_mean": [val for val in inferred_mixture[2::4]], 
+            "y_std": [val for val in inferred_mixture[3::4]]
+            }
+        return pd.DataFrame.from_dict(df_dict)
 
-    def plot_gofs_PCA_components(self):
+    @staticmethod
+    def get_number_of_points_in_prediction_cluster(df_pred: pd.DataFrame) -> pd.DataFrame:
+        """derives number of points in one prediction cluster from membership probabilities (=gamma) (soft-assignment)
+        * it is assured that the numbers add up to the original point number
+        * the numbers can significantly deviate from the hard cluster assignment
+        """
+        gamma_sum = df_pred[[col for col in df_pred.columns if "gamma" in col]].sum()
+        df_n_points_dict = {"prediction_cluster": [], "n_points": []}
+        for gamma_pred_cl in gamma_sum.index:
+            df_n_points_dict["prediction_cluster"].append(gamma_pred_cl.split("_")[-1])
+            df_n_points_dict["n_points"].append(int(gamma_sum[gamma_pred_cl]))
+        n_residuals = round(sum(gamma_sum - gamma_sum.astype(int)))
+        residuals_sorted = (gamma_sum % gamma_sum.astype(int)).sort_values(ascending=False)
+        for i in range(n_residuals):
+            gamma_pred_cl = residuals_sorted.index[i].split("_")[-1]
+            index_pred_cluster = df_n_points_dict["prediction_cluster"].index(gamma_pred_cl)
+            df_n_points_dict["n_points"][index_pred_cluster] += 1
+        return pd.DataFrame.from_dict(df_n_points_dict)
+
+    
+    def calculate_cluster_params(self, df_predict):
+        """outdated; currently mixture of soft and hard assignments used -> make it to hard only to compare perfomance with soft"""
+        df_cl_grouped = df_predict.groupby(["prediction_cluster"]).agg({"x": ["mean"], "y": ["mean", "std"]})
+        df_cl_grouped.columns = ['_'.join(col).strip() if col[1] else col[0] for col in df_cl_grouped.columns.values]
+        df_n_points = self.get_number_of_points_in_prediction_cluster(df_predict)
+        df_cl_grouped = df_cl_grouped.merge(df_n_points, left_index=True, right_index=True)
+        df_cl_grouped = df_cl_grouped.reset_index()
+        return df_cl_grouped
+    
+
+    def plot_gofs_PCA_components(self, pca_n_components = None):
+        if pca_n_components is None:
+            pca_n_components = self.params.pca_n_components
         df = self.df_gofs.copy()
         features = [col for col in df.columns if "model_" in col]
         pca = PCA()
-        components = pca.fit_transform(df[features])[:, :self.params.pca_n_components]
+        components = pca.fit_transform(df[features])[:, :pca_n_components]
         labels = {
             str(i): f"PC {i+1} ({var:.1f}%)"
             for i, var in enumerate(pca.explained_variance_ratio_ * 100)
         }
-        df_pca = pd.DataFrame.from_dict({labels[str(i)]: components[:,i] for i in range(self.params.pca_n_components) })
+        df_pca = pd.DataFrame.from_dict({labels[str(i)]: components[:,i] for i in range(pca_n_components) })
         df_pca["data_model"] = df["data_model"]
         alpha_models, alpha_obs = 0.25, 1
         df_plot = df_pca

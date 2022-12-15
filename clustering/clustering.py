@@ -23,8 +23,7 @@ class ParallelParameter(Parameter):
 
 @nested_dataclass
 class EMClusteringParameter(Parameter):
-    save_data: bool = False                                             # If true; data will be stored in `path_to_save` (currently not implemented)
-    path_to_save: str = None                                            # (see above)
+    path_to_store_data: str = None                                            # (see above)
     parallel: ParallelParameter = ParallelParameter()                   # parameters passed to joblib´s `Parallel`
     cluster_init: InitializationParameter = InitializationParameter()   # parameters passed to Initialization class
     em: EMParameter = EMParameter()                                     # parameters passed to class `EM`
@@ -46,9 +45,8 @@ class EMClustering:
             )
         # processed results of the clustering run:
         self.model_data = None
-        self.df_results = None
-        # 
         self.df_scores = None
+        self.df_scores_na = None
 
     def load_experiments(self, experiments: list[Experiment]):
         """Load experiments; look at `Experiment` class docstring for further information.
@@ -73,8 +71,8 @@ class EMClustering:
         parallel_results = self._execute_parallel_clustering()
 
         self.logger.info("\nClustering successfull; starting processing of results")
-        self.df_results, self.model_data = self._process_parallel_results(parallel_results)
-        self.df_scores,  = create_scoreboard(self.df_results, self.model_data)
+        df_results, self.model_data = self._process_parallel_results(parallel_results)
+        self.df_scores, self.df_scores_na  = create_scoreboard(df_results, self.model_data)
         self.logger.info(
             "Processing successfull - Run has been finished - logger will be closed - END\n\n"
             )
@@ -170,26 +168,37 @@ class EMClustering:
         return create_scoreboard(self.df_results, self.model_data)[0]
 
     def save_results(self):
-        # prepare data to be saved
-        df_scores, df_scores_na = create_scoreboard(self.df_results, self.model_data)
+        """saves all relevant data if
+        * self.params.path_to_store_data has been set to a valid path
+        """
+        if self.params.path_to_store_data is None:
+            raise ValueError("either `store_data` is set to False or no path for saving data has been provided")
+        
+          # make directory
+        now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        clustering_results_path = os.path.join(self.params.path_to_store_data, f"Clustering_run_{now}")
+        if not os.path.exists(clustering_results_path):
+            os.makedirs(clustering_results_path)
+
+        # save inferred mixtures
         inferred_mixtures = {
             model_idx: list(inf_mixture) for model_idx, inf_mixture in enumerate(self.model_data["inferred_mixtures"])
             }
+        save_dict_as_json(clustering_results_path, inferred_mixtures, "inferred_mixtures.json")
+
+        # save starting values
         starting_values = {
             model_idx: list(starting_values) for model_idx, starting_values in enumerate(self.model_data["starting_values"])
             }
-        
-        # make directory
-        now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        clustering_results_path = os.path.join(self.params.path_to_save, f"Clustering_run_{now}")
-        if not os.path.exists(clustering_results_path):
-            os.makedirs(clustering_results_path)
-        # save data
-        filepath_df_scores = os.path.join(clustering_results_path, "df_scores.csv")
-        df_scores.to_csv(filepath_df_scores, index=False)
-        filepath_df_scores_na = os.path.join(clustering_results_path, "df_scores_na.csv")
-        df_scores_na.to_csv(filepath_df_scores_na, index=False)
-        save_dict_as_json(clustering_results_path, inferred_mixtures, "inferred_mixtures.json")
         save_dict_as_json(clustering_results_path, starting_values, "starting_values.json")
-        self.params.save(clustering_results_path)
 
+        # save df_scores
+        filepath_df_scores = os.path.join(clustering_results_path, "df_scores.csv")
+        self.df_scores.to_csv(filepath_df_scores, index=False)
+
+        # save df_scores_na
+        filepath_df_scores_na = os.path.join(clustering_results_path, "df_scores_na.csv")
+        self.df_scores_na.to_csv(filepath_df_scores_na, index=False)
+        
+        # save parameters
+        self.params.save(clustering_results_path)

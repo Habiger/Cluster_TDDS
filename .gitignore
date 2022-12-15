@@ -2,4 +2,6 @@ __pycache__/
 *.log
 *.svg
 /0_jupyter_notebooks
+/1_logs
 /2_saved_runs
+/3_mc_results

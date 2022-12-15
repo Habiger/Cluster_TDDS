@@ -5,9 +5,19 @@ import os
 import shutil
 
 
+def get_log_filepath():
+    cwd = os.getcwd()
+    default_path = os.path.join(cwd, "3_mc_results")  # per default logfiles will be stored together with the clustering results
+    if not os.path.exists(default_path):
+        alternative_folder = "logs"           # for debugging
+        if not os.path.exists(alternative_folder):
+            os.makedirs(alternative_folder)
+    else: 
+        return default_path
+
 class Logger:
-    logger_name: str = "Clustering1"
-    path_logfiles: str = "1_logs"    #TODO implement a way to define the path outside of this class
+    logger_name: str = "Clustering"
+    path_logfiles: str = get_log_filepath()     
     fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     
     @classmethod
@@ -15,7 +25,7 @@ class Logger:
         """Creates/reloads the logger and returns it
         """
         logger = logging.getLogger(f"{cls.logger_name}_logger")
-        if len(logger.handlers) == 0: # necessary because of a known joblib bug: https://github.com/joblib/joblib/issues/1017
+        if len(logger.handlers) == 0: # because of a known joblib bug: https://github.com/joblib/joblib/issues/1017
             logger.setLevel(logging.INFO)
             # create the logging file handler
             file_path = os.path.join(cls.path_logfiles, f"{cls.logger_name}.log")

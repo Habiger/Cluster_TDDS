@@ -1,7 +1,7 @@
 import pandas as pd
 
 from sklearn.metrics.cluster import adjusted_rand_score
-from clustering.post_processing import predict_clusters
+from postanalysis.post_processing import predict_clusters
 
 
 def include_true_clusternumber(df_results: pd.DataFrame, model_data: dict) -> pd.DataFrame:
