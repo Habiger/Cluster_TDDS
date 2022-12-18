@@ -1,8 +1,6 @@
 
-This repository depicts the current state of my undergraduated thesis. (work ongoing)
+This repository depicts the current state of my undergraduate thesis. (work ongoing)
 
-    .
-    ├── ...
     ├── /clustering           # core module
     │   ├── /em               ## low-level implementation of the EM-Algorithm
     │   ├── /initialization   ## starting value routines (multiple options)
