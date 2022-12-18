@@ -15,7 +15,9 @@ This repository depicts the current state of my undergraduated thesis. (work ong
 **Installation** (currently not recommended): 
 * clone repository
 * obtain required packages via ```pip install requirements.txt``` 
-  
+ 
+**Tutorial**:
+Feel free to have a look at ```example_notebook_README.ipynb``` if you want to see how the example in the readme below has been generated. 
     
 ## Project Overview
 ### Objective
@@ -72,4 +74,3 @@ This is the simulated input data from the *Objective* section above clustered by
 *We can see that the algorithm sucessfully identified cluster 0 (red) and 4 (lime green). Cluster 2 (dark green) and 5 (pink) have been merged together with their bigger neighbours 1 (violet) and 3 (teal).*
 ![result_best_model](https://user-images.githubusercontent.com/97874941/207207821-f3f879fa-a809-4528-8470-09d96e48fa87.svg)
 
-Feel free to have a look at ```example_notebook_README.ipynb``` if you want to see how this example has been generated. 
