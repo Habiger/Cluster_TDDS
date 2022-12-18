@@ -16,7 +16,7 @@ This repository depicts the current state of my undergraduated thesis. (work ong
 * clone repository
 * obtain required packages via ```pip install requirements.txt``` 
  
-**Tutorial**:
+**Tutorial**:  
 Feel free to have a look at ```example_notebook_README.ipynb``` if you want to see how the example in the readme below has been generated. 
     
 ## Project Overview
