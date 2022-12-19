@@ -12,7 +12,8 @@ This repository depicts the current state of my undergraduate thesis. (work ongo
 
 **Installation** (currently not recommended): 
 * clone repository
-* obtain required packages via ```pip install requirements.txt``` 
+* set up a new virtual environment
+* obtain required packages via ```pip install -r path/to/requirements.txt``` 
  
 **Tutorial**:  
   
@@ -43,8 +44,9 @@ it possesses some inconveniences, which make it hard to fully automate the clust
 
  
 ### Flowchart
-This flowchart gives you a rough idea on how the module works and how its different components relate to each other. 
-
+This flowchart gives you a rough idea on how the module works and how its different components relate to each other.  
+  
+(reload page if the chart does not render)
 ```mermaid
 flowchart TD
     A(/input_data) -- load experimental data --> J(clustering.py)
