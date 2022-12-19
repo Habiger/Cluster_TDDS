@@ -20,7 +20,7 @@ Feel free to have a look at ```example_notebook_README.ipynb``` if you want to s
 ## Project Overview
 ### Objective
 
-The purpose of this project is to create a fully automated unsupervised learning algorithm to identify individual defects of MOSFETs from time-dependent defect spectroscopy (TDDS) data.
+The purpose of this project is to create a fully automated unsupervised learning algorithm to identify statistical parameters of individual defects from measurements made by time-dependent defect spectroscopy (TDDS) of MOSFETs.
   
 *Starting with the input data in the left picture; the goal is to assign each point to its generating defect. The true assignments can be observed in the right picture as colored clusters.*
 ![cluster_figure](https://user-images.githubusercontent.com/97874941/207207841-bc978c52-2cd5-4f18-b1fe-e30661fea504.svg)
@@ -65,10 +65,10 @@ flowchart TD
     
   
 ## Interim results
-This is the simulated input data from the *Objective* section above clustered by this module.  
+This is the result for the simulated input data from the *Objective* section above clustered by this module. The figure can be used to analyse the outcome of the clustering in detail.
  
   
 
-*We can see that the algorithm sucessfully identified cluster 0 (red) and 4 (lime green). Cluster 2 (dark green) and 5 (pink) have been merged together with their bigger neighbours 1 (violet) and 3 (teal).*
+*We can see that the algorithm sucessfully identified cluster 0 (red) and 4 (lime green), the assignment of the points are marked with the letters c and b, respectively. Cluster 2 (dark green) and 5 (pink) have been merged together with their bigger neighbours 1 (violet) and 3 (teal).*
 ![result_best_model](https://user-images.githubusercontent.com/97874941/207207821-f3f879fa-a809-4528-8470-09d96e48fa87.svg)
 
