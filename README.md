@@ -69,6 +69,6 @@ This is the result for the simulated input data from the *Objective* section abo
  
   
 
-*We can see that the algorithm sucessfully identified cluster 0 (red) and 4 (lime green), the assignment of the points are marked with the letters c and b, respectively. Cluster 2 (dark green) and 5 (pink) have been merged together with their bigger neighbours 1 (violet) and 3 (teal).*
+*We can see that the algorithm sucessfully identified cluster 0 (red) and 4 (lime green), the assignments of the points are marked with the letters c and b, respectively. Cluster 2 (dark green) and 5 (pink) have been merged together with their bigger neighbours 1 (violet) and 3 (teal).*
 ![result_best_model](https://user-images.githubusercontent.com/97874941/207207821-f3f879fa-a809-4528-8470-09d96e48fa87.svg)
 
