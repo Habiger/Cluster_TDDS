@@ -164,9 +164,6 @@ class EMClustering:
         """
         pass
 
-    def get_scoreboard(self):
-        return create_scoreboard(self.df_results, self.model_data)[0]
-
     def save_results(self):
         """saves all relevant data if
         * self.params.path_to_store_data has been set to a valid path

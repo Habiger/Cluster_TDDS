@@ -95,9 +95,7 @@ class MultiModelMimicry:
             emc = EMClustering(**emc_params.get_dict())
             emc.load_experiments(self.bs_dataset_array[m, :, :].reshape(-1))
             emc.run()
-            df_results, model_data = emc.df_results, emc.model_data
-            df_scores, df_scores_nan = create_scoreboard(df_results, model_data)
-            df_scores = df_scores.sort_values(["dataset", self.params.criterion.split("_")[0]+"_rank"])
+            df_scores = emc.df_scores.sort_values(["dataset", self.params.criterion.split("_")[0]+"_rank"])
             gof_results = df_scores.groupby(["dataset"])[self.params.criterion].first()
             gofs[m, :, :] = np.array(gof_results).reshape((self.params.N_bs ,self.M))[:, :]
         return gofs

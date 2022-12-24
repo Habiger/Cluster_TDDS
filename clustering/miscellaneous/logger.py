@@ -9,9 +9,9 @@ def get_log_filepath():
     cwd = os.getcwd()
     default_path = os.path.join(cwd, "3_mc_results")  # per default logfiles will be stored together with the clustering results
     if not os.path.exists(default_path):
-        alternative_folder = "logs"           # for debugging
-        if not os.path.exists(alternative_folder):
-            os.makedirs(alternative_folder)
+        alternative_path = os.path.join(cwd, "logs")           # for debugging
+        if not os.path.exists(alternative_path):
+            os.makedirs(alternative_path)
     else: 
         return default_path
 
